@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Thyroid Detector — Thyroid Detection System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+
+<!-- Ambient background -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Nav -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 16 C10 11 14 8 16 8 C18 8 22 11 22 16 C22 21 18 24 16 24 C14 24 10 21 10 16Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <circle cx="16" cy="16" r="3" fill="currentColor"/>
+          <path d="M16 8 L16 5M16 27 L16 24M8 16 L5 16M27 16 L24 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span>Thyroid<span class="brand-accent"> Detection System</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="#assess" class="nav-link active">Assess</a>
+      <a href="#models" class="nav-link">Models</a>
+      <a href="#about" class="nav-link">About</a>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" title="Toggle theme">🌙</button>
+    <div id="status-bar" class="nav-status">12:34 PM | 25°C</div>
+    <div class="nav-badge">97.3% Accuracy</div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">
+      <span class="pulse-dot"></span>
+      AI-Powered Medical Screening
+    </div>
+    <h1 class="hero-title">
+      Thyroid Disease<br />
+      <span class="gradient-text">Detection System</span>
+    </h1>
+    <p class="hero-sub">
+      Advanced machine learning analysis using clinical biomarkers to identify thyroid conditions with clinical-grade precision.
+    </p>
+  </div>
+  <div class="hero-visual">
+    <div class="thyroid-diagram">
+      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="thyroid-svg">
+        <ellipse cx="70" cy="110" rx="40" ry="55" fill="url(#lobe-grad)" opacity="0.9"/>
+        <ellipse cx="130" cy="110" rx="40" ry="55" fill="url(#lobe-grad)" opacity="0.9"/>
+        <rect x="78" y="130" width="44" height="18" rx="9" fill="url(#lobe-grad)" opacity="0.9"/>
+        <line x1="30" y1="55" x2="170" y2="55" stroke="rgba(99,252,218,0.3)" stroke-width="1" stroke-dasharray="3 4"/>
+        <line x1="30" y1="80" x2="170" y2="80" stroke="rgba(99,252,218,0.2)" stroke-width="1" stroke-dasharray="3 4"/>
+        <line x1="30" y1="105" x2="170" y2="105" stroke="rgba(99,252,218,0.3)" stroke-width="1" stroke-dasharray="3 4"/>
+        <line x1="30" y1="130" x2="170" y2="130" stroke="rgba(99,252,218,0.2)" stroke-width="1" stroke-dasharray="3 4"/>
+        <line x1="30" y1="155" x2="170" y2="155" stroke="rgba(99,252,218,0.3)" stroke-width="1" stroke-dasharray="3 4"/>
+        <circle cx="70" cy="90" r="3" fill="#63fcda" class="scan-dot"/>
+        <circle cx="130" cy="95" r="3" fill="#63fcda" class="scan-dot"/>
+        <circle cx="68" cy="120" r="2.5" fill="#63fcda" class="scan-dot"/>
+        <circle cx="132" cy="125" r="2.5" fill="#63fcda" class="scan-dot"/>
+        <path d="M20 20 L20 35 M20 20 L35 20" stroke="#63fcda" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M180 20 L180 35 M180 20 L165 20" stroke="#63fcda" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M20 180 L20 165 M20 180 L35 180" stroke="#63fcda" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M180 180 L180 165 M180 180 L165 180" stroke="#63fcda" stroke-width="1.5" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="lobe-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="rgba(99,252,218,0.35)"/>
+            <stop offset="100%" stop-color="rgba(139,92,246,0.35)"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="scan-overlay">
+        <div class="scan-line-anim"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Assessment Form -->
+<section id="assess" class="form-section">
+  <div class="section-header">
+    <div class="section-tag">Step 1 — Patient Data</div>
+    <h2>Enter Clinical Parameters</h2>
+    <p>Fill in the available lab values and patient information for analysis.</p>
+  </div>
+
+  <form id="predict-form" class="assessment-form">
+
+    <!-- Demographics -->
+    <div class="form-group-header">
+      <div class="group-icon">👤</div>
+      <div>
+        <h3>Demographics</h3>
+        <span>Basic patient information</span>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field-wrap">
+        <label>Age <span class="req">*</span></label>
+        <input type="number" name="age" min="1" max="120" placeholder="e.g. 45" required />
+      </div>
+      <div class="field-wrap">
+        <label>Sex <span class="req">*</span></label>
+        <select name="sex" required>
+          <option value="">Select</option>
+          <option value="0">Female</option>
+          <option value="1">Male</option>
+        </select>
+      </div>
+      <div class="field-wrap toggle-field">
+        <label>On Medications?</label>
+        <div class="toggle-group">
+          <label class="toggle-opt"><input type="radio" name="on_thyroxine" value="1"> Yes</label>
+          <label class="toggle-opt"><input type="radio" name="on_thyroxine" value="0" checked> No</label>
+        </div>
+      </div>
+      <div id="medication-details" class="toggle-field" style="display: none;">
+        <label>Thyroid Condition</label>
+        <select id="med-condition-select" name="med_condition">
+          <option value="">Select condition</option>
+          <option value="hypo">Hypothyroidism</option>
+          <option value="hyper">Hyperthyroidism</option>
+        </select>
+      </div>
+      <div id="med-type-details" class="toggle-field" style="display: none;">
+        <label>Medication Type</label>
+        <select id="med-type-select" name="med_type">
+          <option value="">Select medication</option>
+        </select>
+      </div>
+      <div id="dosage-details" class="field-wrap" style="display: none;">
+        <label>Dosage</label>
+        <select id="dosage-select" name="dosage_mcg">
+          <option value="">Select dosage</option>
+        </select>
+      </div>
+      <div class="field-wrap toggle-field">
+        <label>Thyroid Surgery?</label>
+        <div class="toggle-group">
+          <label class="toggle-opt"><input type="radio" name="thyroid_surgery" value="1"> Yes</label>
+          <label class="toggle-opt"><input type="radio" name="thyroid_surgery" value="0" checked> No</label>
+        </div>
+      </div>
+      <div id="pregnancy-field" class="field-wrap toggle-field">
+        <label>Pregnant?</label>
+        <div class="toggle-group">
+          <label class="toggle-opt"><input type="radio" name="pregnant" value="1"> Yes</label>
+          <label class="toggle-opt"><input type="radio" name="pregnant" value="0" checked> No</label>
+        </div>
+      </div>
+      <div class="field-wrap toggle-field">
+        <label>Sick?</label>
+        <div class="toggle-group">
+          <label class="toggle-opt"><input type="radio" name="sick" value="1"> Yes</label>
+          <label class="toggle-opt"><input type="radio" name="sick" value="0" checked> No</label>
+        </div>
+      </div>
+      <div id="sick-details" class="toggle-field" style="display: none;">
+        <label>Symptoms</label>
+        <select id="sick-symptom-select" name="sick_symptom">
+          <option value="">Select symptom</option>
+          <option value="fatigue">Fatigue</option>
+          <option value="headache">Headache</option>
+          <option value="diarrhea">Diarrhea</option>
+          <option value="weight_gain">Weight gain</option>
+          <option value="cold_intolerance">Cold intolerance</option>
+          <option value="hair_loss">Hair loss</option>
+          <option value="constipation">Constipation</option>
+          <option value="palpitations">Palpitations</option>
+          <option value="heat_intolerance">Heat intolerance</option>
+          <option value="tremors">Tremors</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BMI Calculator -->
+    <div class="form-group-header">
+      <div class="group-icon">⚖️</div>
+      <div>
+        <h3>BMI Calculator</h3>
+        <span>Height, weight, and thyroid risk assessment</span>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field-wrap">
+        <label>Height <span class="unit">(cm)</span></label>
+        <input type="number" id="height_cm" name="height_cm" min="100" max="250" step="0.1" placeholder="e.g. 165" onchange="calcBMI()" />
+      </div>
+      <div class="field-wrap">
+        <label>Weight <span class="unit">(kg)</span></label>
+        <input type="number" id="weight_kg" name="weight_kg" min="30" max="300" step="0.1" placeholder="e.g. 65" onchange="calcBMI()" />
+      </div>
+      <div class="field-wrap">
+        <button type="button" class="btn-secondary btn-bmi" onclick="calcBMI()">Calculate BMI</button>
+      </div>
+      <div class="field-wrap" style="grid-column: span 2;">
+        <label>BMI Result</label>
+        <div id="bmi-result" class="bmi-result" style="padding: 12px; border-radius: 8px; font-weight: 500;">
+          Enter height and weight to calculate BMI
+        </div>
+        <input type="hidden" id="bmi_value" name="bmi" value="" />
+      </div>
+    </div>
+
+    <!-- Lab Values — T4U and FTI removed -->
+    <div class="form-group-header">
+      <div class="group-icon">🧪</div>
+      <div>
+        <h3>Laboratory Values</h3>
+        <span>Leave blank if not measured</span>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field-wrap lab-field">
+        <label>TSH <span class="unit">(μIU/mL)</span></label>
+        <div class="lab-input-wrap">
+          <input type="number" step="0.01" name="TSH" placeholder="Normal: 0.4–4.0" />
+          <label class="measured-chk">
+            <input type="checkbox" name="TSH_measured" value="1" checked onchange="toggleMeasured(this, 'TSH')"/>
+            Measured
+          </label>
+        </div>
+        <div class="ref-range">Ref: 0.4 – 4.0 μIU/mL</div>
+      </div>
+      <div class="field-wrap lab-field">
+        <label>T3 <span class="unit">(nmol/L)</span></label>
+        <div class="lab-input-wrap">
+          <input type="number" step="0.01" name="FT3" placeholder="Normal: 1.2–3.1" />
+          <label class="measured-chk">
+            <input type="checkbox" name="T3_measured" value="1" checked onchange="toggleMeasured(this, 'T3')"/>
+            Measured
+          </label>
+        </div>
+        <div class="ref-range">Ref: 1.2 – 3.1 nmol/L</div>
+      </div>
+      <div class="field-wrap lab-field">
+        <label>T4 <span class="unit">(nmol/L)</span></label>
+        <div class="lab-input-wrap">
+          <input type="number" step="0.01" name="T4" placeholder="Normal: 58–161" />
+          <label class="measured-chk">
+            <input type="checkbox" name="T4_measured" value="1" checked onchange="toggleMeasured(this, 'T4')"/>
+            Measured
+          </label>
+        </div>
+        <div class="ref-range">Ref: 58 – 161 nmol/L</div>
+      </div>
+    </div>
+
+    <!-- Clinical Flags -->
+    <div class="form-group-header">
+      <div class="group-icon">🏥</div>
+      <div>
+        <h3>Clinical Flags</h3>
+        <span>Additional clinical indicators</span>
+      </div>
+    </div>
+    <div class="form-grid flags-grid">
+      <label class="flag-card"><input type="checkbox" name="goitre" value="1"/><span class="flag-icon">🔵</span><span>Goitre</span></label>
+      <label class="flag-card"><input type="checkbox" name="tumor" value="1"/><span class="flag-icon">🔴</span><span>Tumor</span></label>
+      <label class="flag-card"><input type="checkbox" name="psych" value="1"/><span class="flag-icon">🟡</span><span>Psych</span></label>
+      <label class="flag-card"><input type="checkbox" name="lithium" value="1"/><span class="flag-icon">🟣</span><span>Lithium</span></label>
+      <label class="flag-card"><input type="checkbox" name="hypopituitary" value="1"/><span class="flag-icon">🟠</span><span>Hypopituitary</span></label>
+      <label class="flag-card"><input type="checkbox" name="query_hypothyroid" value="1"/><span class="flag-icon">❓</span><span>Query Hypothyroid</span></label>
+      <label class="flag-card"><input type="checkbox" name="query_hyperthyroid" value="1"/><span class="flag-icon">❓</span><span>Query Hyperthyroid</span></label>
+      <label class="flag-card"><input type="checkbox" name="on_antithyroid_medication" value="1"/><span class="flag-icon">💊</span><span>Anti-thyroid Meds</span></label>
+      <label class="flag-card"><input type="checkbox" name="I131_treatment" value="1"/><span class="flag-icon">☢️</span><span>I131 Treatment</span></label>
+      <label class="flag-card"><input type="checkbox" name="query_on_thyroxine" value="1"/><span class="flag-icon">❔</span><span>Query Thyroxine</span></label>
+    </div>
+
+    <input type="hidden" name="referral_source" value="2"/>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" onclick="fillSample()">Load Sample Data</button>
+      <button type="button" class="btn-secondary" onclick="resetForm()">Clear Form</button>
+      <button type="submit" class="btn-primary">
+        <span class="btn-text">Analyze Patient</span>
+        <span class="btn-icon">→</span>
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- Results -->
+<section id="result-section" class="result-section hidden">
+  <div class="result-header">
+    <div class="section-tag">Step 2 — Analysis Complete</div>
+    <h2>Diagnostic Result</h2>
+  </div>
+
+  <div class="result-container">
+    <div class="diagnosis-card" id="diagnosis-card">
+      <div class="diagnosis-icon" id="diag-icon">🔬</div>
+      <div class="diagnosis-label" id="diag-label">—</div>
+      <div class="diagnosis-desc" id="diag-desc">—</div>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-label">
+          Confidence: <span id="confidence-val">—</span>%
+        </div>
+        <div class="confidence-track">
+          <div class="confidence-fill" id="confidence-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prob-card">
+      <h3>Class Probabilities</h3>
+      <div class="prob-bars" id="prob-bars"></div>
+    </div>
+
+    <div class="rec-card">
+      <h3>Clinical Recommendations</h3>
+      <ul class="rec-list" id="rec-list"></ul>
+      <div class="disclaimer">
+        ⚠️ This tool is for screening purposes only. Always consult a qualified medical professional for diagnosis and treatment.
+      </div>
+    </div>
+  </div>
+
+  <div class="result-actions">
+    <button onclick="scrollToForm()" class="btn-secondary">← New Assessment</button>
+    <button onclick="window.print()" class="btn-primary">🖨 Print Report</button>
+  </div>
+</section>
+
+<!-- Model Comparison -->
+<section id="models" class="models-section">
+  <div class="section-header">
+    <div class="section-tag">ML Performance</div>
+    <h2>Model Comparison</h2>
+    <p>Three models trained and evaluated — the best selected automatically.</p>
+  </div>
+  <div class="models-grid" id="models-grid">
+    <div class="model-card-skeleton"></div>
+    <div class="model-card-skeleton"></div>
+    <div class="model-card-skeleton"></div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about" class="about-section">
+  <div class="about-inner">
+    <div class="about-text">
+      <div class="section-tag">About</div>
+      <h2>How It Works</h2>
+      <p>The system uses a <strong>Random Forest Classifier</strong> trained on 30,000 patient records to detect 5 categories of thyroid conditions using clinical features including hormone levels (TSH, T3, T4) and clinical history.</p>
+      <div class="conditions-grid">
+        <div class="cond-item normal">✓ Negative (Normal)</div>
+        <div class="cond-item warn">⚠ Subclinical Hypothyroidism</div>
+        <div class="cond-item warn">⚠ Subclinical Hyperthyroidism</div>
+        <div class="cond-item danger">✗ Hypothyroidism</div>
+        <div class="cond-item danger">✗ Hyperthyroidism</div>
+      </div>
+    </div>
+    <div class="pipeline-visual">
+      <div class="pipe-step"><div class="pipe-num">01</div><div>Patient Data Input</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step"><div class="pipe-num">02</div><div>Feature Preprocessing</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step"><div class="pipe-num">03</div><div>Random Forest (97.3%)</div></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step"><div class="pipe-num">04</div><div>Diagnosis + Confidence</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-content">
+    <div class="loading-spinner">
+      <div class="spin-ring"></div>
+      <div class="spin-ring spin-ring-2"></div>
+    </div>
+    <p class="loading-text">Analyzing clinical parameters…</p>
+  </div>
+</div>
+
+<script src="static/js/app_fixed.js"></script>
+<script src="static/js/chatbot.js"></script>
+</body>
+</html>
