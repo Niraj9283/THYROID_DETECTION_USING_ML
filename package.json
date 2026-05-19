@@ -1,0 +1,23 @@
+{
+  "name": "thyroid-detection-ml",
+  "version": "1.0.0",
+  "description": "Thyroid Detection System using Machine Learning with Vercel Speed Insights",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Niraj9283/THYROID_DETECTION_USING_ML.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Niraj9283/THYROID_DETECTION_USING_ML/issues"
+  },
+  "homepage": "https://github.com/Niraj9283/THYROID_DETECTION_USING_ML#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
