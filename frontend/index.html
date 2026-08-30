@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ThyroScan AI — AI-Assisted Thyroid Risk Screening & Clinical Health Platform</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#06b6d4">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+
+  <!-- Ambient background glow -->
+  <div class="ambient-glow">
+    <div class="glow-orb glow-1"></div>
+    <div class="glow-orb glow-2"></div>
+    <div class="glow-orb glow-3"></div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="#" class="brand-logo" onclick="switchTab('dashboard')">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <span>ThyroScan<span style="color:var(--accent-cyan)">.AI</span></span>
+          <span class="brand-sub" id="nav-mode-subtitle">Clinical Risk Stratification</span>
+        </div>
+      </a>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+          <span>📊</span> Dashboard
+        </button>
+        <button class="nav-tab-btn" data-tab="assess" onclick="switchTab('assess')">
+          <span>📋</span> Assessment
+        </button>
+        <button class="nav-tab-btn" data-tab="ocr" onclick="switchTab('ocr')">
+          <span>📄</span> Upload
+        </button>
+        <button class="nav-tab-btn" data-tab="compare" onclick="switchTab('compare')">
+          <span>⚖️</span> Compare Labs
+        </button>
+        <button class="nav-tab-btn" data-tab="simulator" onclick="switchTab('simulator')">
+          <span>🧪</span> Simulator
+        </button>
+        <button class="nav-tab-btn" data-tab="trends" onclick="switchTab('trends')">
+          <span>📈</span> Trends
+        </button>
+        <button class="nav-tab-btn" data-tab="thyrobot" onclick="switchTab('thyrobot')">
+          <span>💬</span> ThyroBot
+        </button>
+        <button class="nav-tab-btn" data-tab="modelcard" onclick="switchTab('modelcard')">
+          <span>🔬</span> Model Card
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Patient / Doctor Mode Switch -->
+        <div class="mode-toggle-wrap">
+          <button class="mode-toggle-btn active" id="btn-mode-patient" onclick="setAppMode('patient')">Patient</button>
+          <button class="mode-toggle-btn" id="btn-mode-doctor" onclick="setAppMode('doctor')">Doctor Mode</button>
+        </div>
+
+        <button class="user-menu-btn" id="auth-btn" onclick="openAuthModal()">
+          <span class="user-avatar-circle" id="user-avatar-text">?</span>
+          <span id="user-name-display">Sign In</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- TAB 1: DASHBOARD OVERVIEW -->
+    <main id="tab-dashboard" class="tab-view active">
+      <div class="section-header">
+        <div class="section-tag">
+          <span class="pulse-dot"></span> Clinical Health Overview
+        </div>
+        <h1 class="section-title" id="welcome-user-text">Welcome to ThyroScan 👋</h1>
+        <p class="section-desc">
+          AI-assisted screening estimate based on clinical biomarkers and reported symptoms. Track longitudinal trends, review medical reports, and consult ThyroBot.
+        </p>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stat-card-row">
+        <div class="mini-stat-card">
+          <div class="mini-stat-icon">🩺</div>
+          <div>
+            <div class="mini-stat-val" id="stat-latest-result">No Data</div>
+            <div class="mini-stat-lbl">Latest Screening Signal</div>
+          </div>
+        </div>
+        <div class="mini-stat-card">
+          <div class="mini-stat-icon">🎯</div>
+          <div>
+            <div class="mini-stat-val" id="stat-latest-prob">-- %</div>
+            <div class="mini-stat-lbl">Ensemble Probability</div>
+          </div>
+        </div>
+        <div class="mini-stat-card">
+          <div class="mini-stat-icon">⚖️</div>
+          <div>
+            <div class="mini-stat-val" id="stat-user-bmi">--</div>
+            <div class="mini-stat-lbl">Body Mass Index (BMI)</div>
+          </div>
+        </div>
+        <div class="mini-stat-card">
+          <div class="mini-stat-icon">📑</div>
+          <div>
+            <div class="mini-stat-val" id="stat-total-screenings">0</div>
+            <div class="mini-stat-lbl">Total Assessments</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Grid -->
+      <div class="dashboard-grid">
+        <div class="dash-col-8">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <div class="section-tag">Primary Screening Status</div>
+            <h3 style="font-size:18px; margin-bottom:8px;" id="dash-banner-title">No Recent Screening Record</h3>
+            <p style="color:var(--text-secondary); font-size:13.5px; margin-bottom:18px;" id="dash-banner-desc">
+              Run a new screening, start a conversational interview, or compare past lab reports.
+            </p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn-primary" onclick="switchTab('assess')">
+                <span>➕</span> Start Assessment Wizard
+              </button>
+              <button class="btn-secondary" onclick="switchTab('simulator')">
+                <span>🧪</span> What-If Simulator
+              </button>
+              <button class="btn-secondary" onclick="switchTab('compare')">
+                <span>⚖️</span> Compare Lab Reports
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Assessments Table -->
+          <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:16px;">Recent Assessments</h3>
+              <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="loadAssessmentsList()">Refresh</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="custom-table" id="dashboard-recent-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Screening Signal</th>
+                    <th>Ensemble Probability</th>
+                    <th>Type</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-tbody">
+                  <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:20px;">
+                      No assessment history found. Run your first screening above.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-col-4">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <h3 style="font-size:16px; margin-bottom:12px;">Quick Services</h3>
+            <div class="quick-actions-grid" style="grid-template-columns:1fr;">
+              <div class="action-btn-tile" onclick="switchTab('assess')">
+                <div class="action-tile-icon">🧪</div>
+                <div>
+                  <div class="action-tile-title">Comprehensive Screening</div>
+                  <div class="action-tile-sub">Input TSH, T3, TT4 & symptoms</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('ocr')">
+                <div class="action-tile-icon">📑</div>
+                <div>
+                  <div class="action-tile-title">Scan Lab PDF Report</div>
+                  <div class="action-tile-sub">Extract biomarkers with verification</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('compare')">
+                <div class="action-tile-icon">⚖️</div>
+                <div>
+                  <div class="action-tile-title">Compare 2 Lab Reports</div>
+                  <div class="action-tile-sub">Longitudinal delta & trajectory</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('simulator')">
+                <div class="action-tile-icon">🎛️</div>
+                <div>
+                  <div class="action-tile-title">What-If Simulator</div>
+                  <div class="action-tile-sub">Live biomarker slider exploration</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disclaimer-alert">
+            <span>⚠️</span>
+            <div>
+              <strong>Clinical Screening Notice:</strong>
+              This platform provides statistical risk stratification estimates. It is NOT a clinical diagnosis. Always discuss results with a qualified physician.
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 2: PROGRESSIVE ASSESSMENT & CONVERSATIONAL SCREENING -->
+    <section id="tab-assess" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Clinical Risk Assessment</div>
+        <h2 class="section-title">Thyroid Screening Assessment</h2>
+        <p class="section-desc">
+          Choose standard guided form wizard or speak/chat with the conversational assistant.
+        </p>
+      </div>
+
+      <!-- Mode Selector (Form Wizard vs Conversational Voice/Chat) -->
+      <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button class="btn-primary" id="btn-view-form-wizard" onclick="toggleScreeningMethod('wizard')">
+          <span>📋</span> Standard Guided Wizard
+        </button>
+        <button class="btn-secondary" id="btn-view-conv-wizard" onclick="toggleScreeningMethod('conversational')">
+          <span>🎙️</span> Conversational Voice & Chat Screening
+        </button>
+      </div>
+
+      <!-- CONVERSATIONAL SCREENING VIEW -->
+      <div class="glass-card" id="conversational-screening-container" style="display:none; margin-bottom:24px;">
+        <h3 style="font-size:16px; margin-bottom:6px;">🎙️ Conversational Screening Assistant</h3>
+        <p style="color:var(--text-secondary); font-size:13px; margin-bottom:16px;">
+          Speak or type your clinical details (e.g. <em>"I'm a 42 year old female, my TSH is 5.8, T3 is 1.1, and I feel tired"</em>). The assistant extracts parameters in real time.
+        </p>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px;">
+          <div>
+            <div id="conv-chat-history" style="height:220px; overflow-y:auto; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:12px; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;">
+              <div class="chat-msg bot">
+                <strong>Assistant:</strong> Hello! Tell me your age, biological sex, and any thyroid lab values or symptoms you have.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="conv-user-utterance" placeholder="e.g. I am 38 female, TSH 4.2..." style="flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border-color); color:white; padding:10px; border-radius:var(--radius-sm);" onkeydown="if(event.key==='Enter') sendConversationalUtterance()" />
+              <button class="btn-secondary" onclick="toggleConversationalVoice()" title="Voice Input">🎤</button>
+              <button class="btn-primary" onclick="sendConversationalUtterance()">Submit</button>
+            </div>
+          </div>
+
+          <!-- Live Parameter Extraction Slots -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:14px;">
+            <h4 style="font-size:13.5px; margin-bottom:10px; color:var(--accent-cyan);">Extracted Parameters</h4>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px;" id="conv-extracted-slots">
+              <div>Age: <span id="slot-age" style="color:var(--text-muted);">--</span></div>
+              <div>Sex: <span id="slot-sex" style="color:var(--text-muted);">--</span></div>
+              <div>TSH: <span id="slot-tsh" style="color:var(--text-muted);">--</span></div>
+              <div>T3: <span id="slot-t3" style="color:var(--text-muted);">--</span></div>
+              <div>TT4: <span id="slot-tt4" style="color:var(--text-muted);">--</span></div>
+              <div>Symptoms/Meds: <span id="slot-flags" style="color:var(--text-muted);">None</span></div>
+            </div>
+            <button class="btn-primary" style="width:100%; margin-top:14px; font-size:12.5px;" id="btn-conv-execute" onclick="executeConversationalScreening()" disabled>
+              <span>🔬</span> Execute Screening
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STANDARD GUIDED WIZARD -->
+      <div id="standard-wizard-container">
+        <!-- Step Progress Bar -->
+        <div class="wizard-progress">
+          <div class="wizard-step-node active" id="step-node-1" onclick="goToStep(1)">
+            <div class="wizard-step-bubble">1</div>
+            <div class="wizard-step-title">Demographics & Vitals</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-2" onclick="goToStep(2)">
+            <div class="wizard-step-bubble">2</div>
+            <div class="wizard-step-title">Lab Biomarkers</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-3" onclick="goToStep(3)">
+            <div class="wizard-step-bubble">3</div>
+            <div class="wizard-step-title">Clinical Flags</div>
+          </div>
+          <div class="wizard-step-node" id="step-node-4" onclick="goToStep(4)">
+            <div class="wizard-step-bubble">4</div>
+            <div class="wizard-step-title">Review & Results</div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <form id="screening-wizard-form" onsubmit="event.preventDefault(); submitScreening();">
+            
+            <!-- STEP 1: DEMOGRAPHICS & VITALS -->
+            <div class="form-step-content active" id="form-step-1">
+              <h3 style="font-size:17px; margin-bottom:16px;">Step 1: Patient Demographics & Body Vitals</h3>
+              <div class="form-grid-2" style="margin-bottom:18px;">
+                <div class="form-field">
+                  <label>Patient Age (Years) <span style="color:#ef4444">*</span></label>
+                  <input type="number" id="inp-age" name="age" min="1" max="120" placeholder="e.g. 38" required />
+                </div>
+                <div class="form-field">
+                  <label>Biological Sex <span style="color:#ef4444">*</span></label>
+                  <select id="inp-sex" name="sex" required>
+                    <option value="">Select Sex</option>
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-3" style="margin-bottom:20px;">
+                <div class="form-field">
+                  <label>Height (cm)</label>
+                  <input type="number" id="inp-height" name="height_cm" placeholder="e.g. 168" oninput="calculateLiveBMI()" />
+                </div>
+                <div class="form-field">
+                  <label>Weight (kg)</label>
+                  <input type="number" id="inp-weight" name="weight_kg" placeholder="e.g. 64" oninput="calculateLiveBMI()" />
+                </div>
+                <div class="form-field">
+                  <label>Calculated BMI</label>
+                  <input type="text" id="inp-bmi-disp" placeholder="Auto-calculated" readonly style="background:rgba(255,255,255,0.05);" />
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; margin-top:24px;">
+                <button type="button" class="btn-secondary" onclick="loadSampleCase()">💡 Load Sample Data</button>
+                <button type="button" class="btn-primary" onclick="goToStep(2)">Continue to Lab Biomarkers ➔</button>
+              </div>
+            </div>
+
+            <!-- STEP 2: LAB BIOMARKERS WITH REFERENCE RANGES -->
+            <div class="form-step-content" id="form-step-2">
+              <h3 style="font-size:17px; margin-bottom:6px;">Step 2: Laboratory Hormone Biomarkers</h3>
+              <p style="color:var(--text-secondary); font-size:13px; margin-bottom:18px;">
+                Enter your blood test values. Standard reference ranges are indicated for each parameter.
+              </p>
+
+              <div class="form-grid-2" style="margin-bottom:18px;">
+                <div class="biomarker-input-card">
+                  <div class="biomarker-card-header">
+                    <span class="biomarker-title">Thyroid Stimulating Hormone (TSH)</span>
+                    <span class="biomarker-ref-tag">Ref: 0.45 – 4.5 mIU/L</span>
+                  </div>
+                  <div class="form-field">
+                    <input type="number" step="0.01" id="inp-TSH" name="TSH" placeholder="e.g. 2.45" />
+                    <span class="field-hint">Primary regulatory biomarker for pituitary-thyroid axis</span>
+                  </div>
+                </div>
+
+                <div class="biomarker-input-card">
+                  <div class="biomarker-card-header">
+                    <span class="biomarker-title">Triiodothyronine (Total T3)</span>
+                    <span class="biomarker-ref-tag">Ref: 0.8 – 2.0 ng/mL</span>
+                  </div>
+                  <div class="form-field">
+                    <input type="number" step="0.01" id="inp-T3" name="T3" placeholder="e.g. 1.2" />
+                    <span class="field-hint">Circulating active metabolic thyroid hormone</span>
+                  </div>
+                </div>
+
+                <div class="biomarker-input-card">
+                  <div class="biomarker-card-header">
+                    <span class="biomarker-title">Total Thyroxine (TT4)</span>
+                    <span class="biomarker-ref-tag">Ref: 4.5 – 12.0 ug/dL</span>
+                  </div>
+                  <div class="form-field">
+                    <input type="number" step="0.1" id="inp-TT4" name="TT4" placeholder="e.g. 8.5" />
+                    <span class="field-hint">Major bound prohormone output</span>
+                  </div>
+                </div>
+
+                <div class="biomarker-input-card">
+                  <div class="biomarker-card-header">
+                    <span class="biomarker-title">T4 Uptake (T4U) & Free T4 Index (FTI)</span>
+                    <span class="biomarker-ref-tag">T4U: 0.8–1.3 | FTI: 65–135</span>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-field">
+                      <input type="number" step="0.01" id="inp-T4U" name="T4U" placeholder="T4U (e.g. 1.05)" />
+                    </div>
+                    <div class="form-field">
+                      <input type="number" step="0.1" id="inp-FTI" name="FTI" placeholder="FTI (e.g. 95)" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; margin-top:24px;">
+                <button type="button" class="btn-secondary" onclick="goToStep(1)">⬅ Back</button>
+                <button type="button" class="btn-primary" onclick="goToStep(3)">Continue to Clinical Flags ➔</button>
+              </div>
+            </div>
+
+            <!-- STEP 3: CLINICAL FLAGS & SYMPTOMS -->
+            <div class="form-step-content" id="form-step-3">
+              <h3 style="font-size:17px; margin-bottom:6px;">Step 3: Clinical History & Symptoms</h3>
+              <p style="color:var(--text-secondary); font-size:13px; margin-bottom:18px;">
+                Check any factors or medication history that apply to you.
+              </p>
+
+              <div class="flags-grid" style="margin-bottom:20px;">
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="on_thyroxine" value="1">
+                  <span class="flag-label-text">Taking Thyroxine (Levothyroxine)</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="on_antithyroid_medication" value="1">
+                  <span class="flag-label-text">On Antithyroid Medication</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="thyroid_surgery" value="1">
+                  <span class="flag-label-text">Prior Thyroid Surgery</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="goitre" value="1">
+                  <span class="flag-label-text">Visible Goitre / Gland Enlargement</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="query_hypothyroid" value="1">
+                  <span class="flag-label-text">Suspected Hypothyroid Symptoms</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="query_hyperthyroid" value="1">
+                  <span class="flag-label-text">Suspected Hyperthyroid Symptoms</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="I131_treatment" value="1">
+                  <span class="flag-label-text">Radioactive Iodine (I-131)</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="pregnant" value="1">
+                  <span class="flag-label-text">Currently Pregnant</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="sick" value="1">
+                  <span class="flag-label-text">Acute Concurrent Illness (Sick)</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="lithium" value="1">
+                  <span class="flag-label-text">Taking Lithium</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="tumor" value="1">
+                  <span class="flag-label-text">Tumor / Nodule History</span>
+                </label>
+                <label class="flag-toggle-card">
+                  <input type="checkbox" name="psych" value="1">
+                  <span class="flag-label-text">Psychiatric Condition History</span>
+                </label>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; margin-top:24px;">
+                <button type="button" class="btn-secondary" onclick="goToStep(2)">⬅ Back</button>
+                <button type="button" class="btn-primary" onclick="goToStep(4)">Review & Run Screening ➔</button>
+              </div>
+            </div>
+
+            <!-- STEP 4: REVIEW & SCREENING RESULT -->
+            <div class="form-step-content" id="form-step-4">
+              <h3 style="font-size:17px; margin-bottom:14px;">Step 4: Review Parameters & Generate Screening</h3>
+              
+              <div id="screening-pre-submit" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px; margin-bottom:20px;">
+                <p style="color:var(--text-secondary); font-size:13.5px; margin-bottom:12px;">
+                  Ready to execute statistical screening across the Multi-Model Ensemble.
+                </p>
+                <div style="display:flex; gap:12px;">
+                  <button type="submit" class="btn-primary" id="btn-run-screening">
+                    <span>🔬</span> Execute AI Risk Analysis
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="goToStep(1)">Edit Parameters</button>
+                </div>
+              </div>
+
+              <!-- RESULT CONTAINER (Dynamic Injection) -->
+              <div id="screening-result-display" style="display:none;">
+                <!-- Header Card -->
+                <div class="result-header-card risk-low" id="res-card-box">
+                  <div class="result-top-row">
+                    <div>
+                      <div class="section-tag" style="color:inherit;" id="res-tag-text">AI Risk Screening Output</div>
+                      <div class="result-badge" id="res-badge-title">Low Risk Signal</div>
+                    </div>
+                    <div class="prob-metric-box">
+                      <div class="prob-val" id="res-prob-val">94.2%</div>
+                      <div class="prob-lbl">Ensemble Probability</div>
+                    </div>
+                  </div>
+                  <p id="res-summary-text" style="font-size:14px; line-height:1.5; color:var(--text-primary);">
+                    Clinical summary text...
+                  </p>
+                </div>
+
+                <!-- Multi-Model Ensemble Agreement Matrix -->
+                <div class="ensemble-card" id="res-ensemble-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong style="font-size:14px;">Multi-Model Ensemble Consensus: <span id="res-consensus-score" style="color:var(--accent-cyan);">3/3 Unanimous</span></strong>
+                    <span class="status-pill normal" id="res-consensus-badge">Consensus High</span>
+                  </div>
+                  <div id="res-ensemble-rows"></div>
+                  <div id="res-disagreement-alert" style="display:none; margin-top:8px; font-size:12px; color:#f59e0b;"></div>
+                </div>
+
+                <!-- Action Bar -->
+                <div style="display:flex; gap:12px; margin:20px 0; flex-wrap:wrap;">
+                  <button type="button" class="btn-primary" id="btn-download-pdf-res" onclick="downloadCurrentResultPDF()">
+                    <span>📥</span> Download Medical PDF Report
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="generateAndShowDoctorSOAP()">
+                    <span>🩺</span> Generate Doctor SOAP Note
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="askThyroBotAboutResult()">
+                    <span>💬</span> Discuss with ThyroBot
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="resetScreeningWizard()">
+                    <span>➕</span> New Screening
+                  </button>
+                </div>
+
+                <!-- Biomarkers vs Reference Ranges -->
+                <div class="glass-card" style="margin-bottom:20px;">
+                  <h4 style="font-size:15px; margin-bottom:8px;">Biomarker Laboratory Reference Analysis</h4>
+                  <div style="overflow-x:auto;">
+                    <table class="custom-table" id="res-biomarkers-table">
+                      <thead>
+                        <tr>
+                          <th>Biomarker</th>
+                          <th>Your Value</th>
+                          <th>Standard Reference Range</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="res-biomarkers-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Explainability & Attributions -->
+                <div class="dashboard-grid">
+                  <div class="dash-col-6">
+                    <div class="glass-card">
+                      <h4 style="font-size:15px; margin-bottom:10px;">Why this result? (Feature Attributions)</h4>
+                      <div id="res-influences-box" style="display:flex; flex-direction:column; gap:12px;"></div>
+                    </div>
+                  </div>
+                  <div class="dash-col-6">
+                    <div class="glass-card">
+                      <h4 style="font-size:15px; margin-bottom:10px;">Calibrated Probability Distribution</h4>
+                      <div id="res-prob-distribution-box" style="display:flex; flex-direction:column; gap:10px;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recommended Next Steps -->
+                <div class="glass-card" style="margin-top:20px;">
+                  <h4 style="font-size:15px; margin-bottom:10px;">Recommended Clinical Action Plan</h4>
+                  <ul id="res-action-plan-list" style="padding-left:20px; color:var(--text-secondary); font-size:13.5px; line-height:1.7;"></ul>
+                </div>
+              </div>
+
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LAB REPORT OCR EXTRACTION -->
+    <section id="tab-ocr" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Automated Document Parsing</div>
+        <h2 class="section-title">Upload Blood Test / Thyroid Lab Report</h2>
+        <p class="section-desc">
+          Upload your diagnostic report (PDF or text). The system parses key parameters with confidence metrics and requests confirmation before analysis.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-col-6">
+          <div class="glass-card">
+            <div class="drop-zone" id="ocr-drop-zone" onclick="document.getElementById('ocr-file-input').click()">
+              <input type="file" id="ocr-file-input" style="display:none" accept=".pdf,.txt" onchange="handleOCRFileUpload(this.files[0])" />
+              <div style="font-size:36px; margin-bottom:12px;">📑</div>
+              <h3 style="font-size:16px; margin-bottom:6px;">Select or Drag Lab Report File</h3>
+              <p style="color:var(--text-muted); font-size:12.5px;">Supports diagnostic lab PDF reports (e.g. Metropolis, Lal PathLabs, Quest, SRL, Thyrocare)</p>
+              <button type="button" class="btn-secondary" style="margin-top:14px;">Browse Files</button>
+            </div>
+
+            <div id="ocr-loading" style="display:none; text-align:center; padding:20px; color:var(--accent-cyan);">
+              <span>⏳ Extracting clinical parameters from report...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-col-6">
+          <div class="glass-card" id="ocr-results-card">
+            <h3 style="font-size:16px; margin-bottom:8px;">Extracted Biomarker Verification</h3>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+              Verify or correct the extracted values below before applying them to your screening assessment.
+            </p>
+
+            <div class="form-grid-2" style="margin-bottom:14px;">
+              <div class="form-field">
+                <label>TSH (mIU/L)</label>
+                <input type="number" step="0.01" id="ocr-val-tsh" placeholder="Not found" />
+              </div>
+              <div class="form-field">
+                <label>Total T3 (ng/mL)</label>
+                <input type="number" step="0.01" id="ocr-val-t3" placeholder="Not found" />
+              </div>
+              <div class="form-field">
+                <label>Total T4 / TT4 (ug/dL)</label>
+                <input type="number" step="0.1" id="ocr-val-tt4" placeholder="Not found" />
+              </div>
+              <div class="form-field">
+                <label>Patient Age (Years)</label>
+                <input type="number" id="ocr-val-age" placeholder="Not found" />
+              </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:12px; color:var(--text-muted);" id="ocr-text-snippet">
+              Upload a document to view extraction confidence and text previews.
+            </div>
+
+            <button class="btn-primary" id="btn-apply-ocr-values" onclick="applyOCRToWizard()" disabled>
+              <span>✅</span> Confirm & Transfer to Screening Wizard
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: LAB REPORT COMPARISON (REPORT A vs REPORT B) -->
+    <section id="tab-compare" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Longitudinal AI Comparator</div>
+        <h2 class="section-title">AI Lab Report Comparison (Report A vs Report B)</h2>
+        <p class="section-desc">
+          Compare baseline and follow-up lab tests to calculate percentage changes, hormone velocity shifts, and clinical questions for your physician.
+        </p>
+      </div>
+
+      <div class="dashboard-grid" style="margin-bottom:20px;">
+        <!-- Report A (Baseline) -->
+        <div class="dash-col-6">
+          <div class="glass-card">
+            <h3 style="font-size:16px; margin-bottom:12px; color:var(--accent-cyan);">Report A (Baseline Test)</h3>
+            <div class="form-grid-2" style="margin-bottom:12px;">
+              <div class="form-field">
+                <label>Test Date</label>
+                <input type="date" id="comp-date-a" value="2026-01-15" />
+              </div>
+              <div class="form-field">
+                <label>TSH (mIU/L)</label>
+                <input type="number" step="0.01" id="comp-tsh-a" value="2.8" />
+              </div>
+              <div class="form-field">
+                <label>Total T3 (ng/mL)</label>
+                <input type="number" step="0.01" id="comp-t3-a" value="1.3" />
+              </div>
+              <div class="form-field">
+                <label>Total T4 (ug/dL)</label>
+                <input type="number" step="0.1" id="comp-tt4-a" value="9.2" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report B (Follow-up) -->
+        <div class="dash-col-6">
+          <div class="glass-card">
+            <h3 style="font-size:16px; margin-bottom:12px; color:var(--accent-purple);">Report B (Follow-up Test)</h3>
+            <div class="form-grid-2" style="margin-bottom:12px;">
+              <div class="form-field">
+                <label>Test Date</label>
+                <input type="date" id="comp-date-b" value="2026-07-20" />
+              </div>
+              <div class="form-field">
+                <label>TSH (mIU/L)</label>
+                <input type="number" step="0.01" id="comp-tsh-b" value="5.6" />
+              </div>
+              <div class="form-field">
+                <label>Total T3 (ng/mL)</label>
+                <input type="number" step="0.01" id="comp-t3-b" value="0.95" />
+              </div>
+              <div class="form-field">
+                <label>Total T4 (ug/dL)</label>
+                <input type="number" step="0.1" id="comp-tt4-b" value="7.1" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-bottom:24px;">
+        <button class="btn-primary" onclick="executeLabReportComparison()">
+          <span>⚖️</span> Compare Reports & Generate Trajectory
+        </button>
+      </div>
+
+      <!-- Comparison Results Box -->
+      <div class="glass-card" id="comp-results-card" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <h3 style="font-size:16px;">Biomarker Shift Analysis</h3>
+          <span class="status-pill low" id="comp-trajectory-badge">Progressive Pattern</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Biomarker</th>
+                <th>Baseline (A)</th>
+                <th>Follow-up (B)</th>
+                <th>Absolute Shift</th>
+                <th>Percentage Delta</th>
+              </tr>
+            </thead>
+            <tbody id="comp-table-tbody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:18px; background:rgba(255,255,255,0.02); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <h4 style="font-size:14.5px; margin-bottom:6px; color:var(--accent-cyan);">Longitudinal Synthesis</h4>
+          <p id="comp-synthesis-text" style="font-size:13.5px; color:var(--text-secondary); line-height:1.6;"></p>
+        </div>
+
+        <div style="margin-top:16px;">
+          <h4 style="font-size:14.5px; margin-bottom:8px;">Questions to Discuss with Your Doctor:</h4>
+          <ul id="comp-questions-list" style="padding-left:20px; font-size:13px; color:var(--text-secondary); line-height:1.7;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: WHAT-IF SIMULATOR -->
+    <section id="tab-simulator" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Interactive Risk Exploration</div>
+        <h2 class="section-title">"What-If" Biomarker Model Simulator</h2>
+        <p class="section-desc">
+          Interactively slide hormone values to observe how the AI ensemble adjusts its risk probability in real time.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-col-6">
+          <div class="glass-card">
+            <h3 style="font-size:16px; margin-bottom:16px;">Adjust Input Biomarkers</h3>
+            
+            <div class="sim-slider-group">
+              <div class="sim-slider-header">
+                <span>TSH (mIU/L)</span>
+                <strong id="sim-disp-tsh" style="color:var(--accent-cyan);">2.50</strong>
+              </div>
+              <input type="range" min="0.01" max="25.0" step="0.1" value="2.5" class="sim-slider" id="sim-tsh" oninput="runLiveSimulator()" />
+            </div>
+
+            <div class="sim-slider-group">
+              <div class="sim-slider-header">
+                <span>Total T3 (ng/mL)</span>
+                <strong id="sim-disp-t3" style="color:var(--accent-cyan);">1.20</strong>
+              </div>
+              <input type="range" min="0.1" max="6.0" step="0.1" value="1.2" class="sim-slider" id="sim-t3" oninput="runLiveSimulator()" />
+            </div>
+
+            <div class="sim-slider-group">
+              <div class="sim-slider-header">
+                <span>Total T4 / TT4 (ug/dL)</span>
+                <strong id="sim-disp-tt4" style="color:var(--accent-cyan);">8.5</strong>
+              </div>
+              <input type="range" min="1.0" max="22.0" step="0.5" value="8.5" class="sim-slider" id="sim-tt4" oninput="runLiveSimulator()" />
+            </div>
+
+            <div class="sim-slider-group">
+              <div class="sim-slider-header">
+                <span>Patient Age (Years)</span>
+                <strong id="sim-disp-age" style="color:var(--accent-cyan);">38</strong>
+              </div>
+              <input type="range" min="18" max="90" step="1" value="38" class="sim-slider" id="sim-age" oninput="runLiveSimulator()" />
+            </div>
+
+            <div style="margin-top:14px;">
+              <label class="flag-toggle-card">
+                <input type="checkbox" id="sim-thyroxine" onchange="runLiveSimulator()">
+                <span class="flag-label-text">Simulate on Thyroxine Medication</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-col-6">
+          <div class="glass-card" id="sim-result-card">
+            <h3 style="font-size:16px; margin-bottom:12px;">Simulated Output</h3>
+            <div class="result-header-card risk-low" id="sim-card-box">
+              <div class="result-top-row">
+                <div>
+                  <div class="section-tag" style="color:inherit;">Simulated State</div>
+                  <div class="result-badge" id="sim-badge-title">Low Risk Signal</div>
+                </div>
+                <div class="prob-metric-box">
+                  <div class="prob-val" id="sim-prob-val">95.0%</div>
+                  <div class="prob-lbl">Simulated Probability</div>
+                </div>
+              </div>
+              <p id="sim-summary-text" style="font-size:13.5px; color:var(--text-primary); margin-top:8px;">
+                Normal baseline parameters.
+              </p>
+            </div>
+
+            <div style="margin-top:16px;">
+              <h4 style="font-size:14px; margin-bottom:8px;">Calibrated Class Shifts</h4>
+              <div id="sim-probs-distribution"></div>
+            </div>
+
+            <div class="disclaimer-alert" style="margin-top:14px;">
+              <span>⚠️</span>
+              <div>
+                <strong>Simulation Disclaimer:</strong> This interactive simulator illustrates machine learning decision boundaries. It must not be used to self-titrate or modify medication doses.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: LONGITUDINAL HEALTH TRENDS -->
+    <section id="tab-trends" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Longitudinal Health Tracking</div>
+        <h2 class="section-title">Thyroid Biomarker & Health Trends</h2>
+        <p class="section-desc">
+          Track how your TSH, T3, T4 hormones and BMI evolve across consecutive screenings.
+        </p>
+      </div>
+
+      <div class="glass-card" style="margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:16px;">TSH & Hormone History Timeline</h3>
+          <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="loadTrends()">Refresh Timeline</button>
+        </div>
+        <div id="trends-chart-container" style="min-height:220px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:var(--text-muted);">
+          <span>Sign in or complete multiple assessments to generate visual trend curves.</span>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <h3 style="font-size:16px; margin-bottom:14px;">Historical Screening Records</h3>
+        <div style="overflow-x:auto;">
+          <table class="custom-table" id="trends-history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Result Signal</th>
+                <th>Probability</th>
+                <th>TSH (mIU/L)</th>
+                <th>T3 (ng/mL)</th>
+                <th>TT4 (ug/dL)</th>
+                <th>Report</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="trends-history-tbody">
+              <tr>
+                <td colspan="8" style="text-align:center; color:var(--text-muted); padding:20px;">
+                  No historical records available.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7: THYROBOT AI COPILOT -->
+    <section id="tab-thyrobot" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Clinical RAG Assistant</div>
+        <h2 class="section-title">ThyroBot — AI Health Copilot</h2>
+        <p class="section-desc">
+          Consult medical guidelines (ATA, NHS, WHO) regarding thyroid physiology, test preparation, medication guidelines, and symptom queries.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-col-8">
+          <div class="chat-container">
+            <div class="chat-messages" id="chat-msg-list">
+              <div class="chat-msg bot">
+                <strong>ThyroBot AI:</strong><br>
+                Hello! I am your clinical thyroid education copilot. You can ask me questions about your laboratory test results, TSH ranges, medication instructions, or diet.
+                <div class="citation-chip-box">
+                  <span class="citation-chip">American Thyroid Association</span>
+                  <span class="citation-chip">NHS Guidelines</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-input-bar">
+              <input type="text" id="chat-user-input" placeholder="Ask about TSH levels, medication, symptoms..." onkeydown="if(event.key==='Enter') sendChatMessage()" />
+              <button type="button" class="btn-secondary" id="btn-voice-input" onclick="toggleVoiceRecognition()" title="Voice Input">
+                🎤
+              </button>
+              <button type="button" class="btn-primary" onclick="sendChatMessage()">
+                Send ➔
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-col-4">
+          <div class="glass-card" style="margin-bottom:18px;">
+            <h3 style="font-size:15px; margin-bottom:10px;">Suggested Copilot Inquiries</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="action-btn-tile" style="padding:10px 12px;" onclick="askSampleQuestion('What questions should I ask my doctor during my thyroid consultation?')">
+                <span style="font-size:13px;">What questions should I ask my doctor?</span>
+              </button>
+              <button class="action-btn-tile" style="padding:10px 12px;" onclick="askSampleQuestion('How should Levothyroxine be taken with regards to food and coffee?')">
+                <span style="font-size:13px;">How to properly take Levothyroxine?</span>
+              </button>
+              <button class="action-btn-tile" style="padding:10px 12px;" onclick="askSampleQuestion('What are the symptoms and causes of subclinical hypothyroidism?')">
+                <span style="font-size:13px;">Explain subclinical hypothyroidism</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 style="font-size:15px; margin-bottom:8px;">AI Safety Gateway</h3>
+            <p style="color:var(--text-muted); font-size:12.5px;">
+              Equipped with clinical safety filters that detect medication modification questions, self-treatment hazards, and emergency red flags.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 8: MODEL CARD & EVALUATION TRANSPARENCY -->
+    <section id="tab-modelcard" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">Machine Learning Transparency</div>
+        <h2 class="section-title">Multi-Model Architecture & Evaluation Card</h2>
+        <p class="section-desc">
+          Full transparency into dataset methodology, ensemble consensus metrics, and limitations.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-col-6">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <h3 style="font-size:16px; margin-bottom:12px;">Ensemble Models Registry</h3>
+            <div style="overflow-x:auto;">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Architecture</th>
+                    <th>Accuracy</th>
+                    <th>F1 Score</th>
+                    <th>Role in Ensemble</th>
+                  </tr>
+                </thead>
+                <tbody id="models-comp-tbody">
+                  <tr>
+                    <td><strong>Gradient Boosting</strong></td>
+                    <td>97.00%</td>
+                    <td>96.96%</td>
+                    <td><span class="status-pill normal">Primary (45% Wt)</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Random Forest</strong></td>
+                    <td>96.38%</td>
+                    <td>96.39%</td>
+                    <td><span class="status-pill normal">Secondary (40% Wt)</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>SVM (RBF Kernel)</strong></td>
+                    <td>87.08%</td>
+                    <td>87.73%</td>
+                    <td><span class="status-pill low">Calibrator (15% Wt)</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 style="font-size:16px; margin-bottom:10px;">Evaluation Methodology</h3>
+            <ul style="padding-left:20px; font-size:13.5px; color:var(--text-secondary); line-height:1.7;">
+              <li><strong>Dataset:</strong> 30,000 anonymized clinical thyroid screening records with 27 raw feature fields.</li>
+              <li><strong>Train/Test Split:</strong> 80% training (24,000 samples) and 20% stratified testing (6,000 samples).</li>
+              <li><strong>Ensemble Voting:</strong> Weighted soft-voting with probability calibration across individual models.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dash-col-6">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <h3 style="font-size:16px; margin-bottom:10px;">Intended vs Non-Intended Use</h3>
+            <div style="margin-bottom:14px;">
+              <strong style="color:var(--risk-low); font-size:13.5px;">✔ Intended Use:</strong>
+              <p style="color:var(--text-secondary); font-size:13px;">
+                Preliminary risk stratification, patient education, reference range comparison, and identifying patients who require endocrinologist consultation.
+              </p>
+            </div>
+            <div>
+              <strong style="color:var(--risk-high); font-size:13.5px;">✖ Non-Intended Use:</strong>
+              <p style="color:var(--text-secondary); font-size:13px;">
+                Automated clinical diagnosis, solitary basis for surgical decisions, or initiating prescription medication without confirmatory laboratory assays.
+              </p>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 style="font-size:16px; margin-bottom:10px;">Known Limitations & Bias Considerations</h3>
+            <p style="color:var(--text-secondary); font-size:13px; line-height:1.6;">
+              Cross-sectional datasets do not account for transient non-thyroidal illness (euthyroid sick syndrome), pregnancy-induced trimester hormone shifts, or lab-specific reference range differences without clinician review.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- DOCTOR SOAP NOTE MODAL -->
+  <div class="modal-overlay" id="doctor-soap-modal">
+    <div class="modal-box" style="max-width:650px;">
+      <button class="modal-close-btn" onclick="closeDoctorSoapModal()">✕</button>
+      <h3 style="font-size:17px; margin-bottom:6px; color:#38bdf8;">🩺 Clinical SOAP Summary (EHR Ready)</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+        Formatted clinical progress note for clinician review and electronic medical record export.
+      </p>
+      <div class="soap-note-container" id="doctor-soap-text">Loading clinical note...</div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button class="btn-secondary" onclick="copyDoctorSOAPNote()">📋 Copy Note to Clipboard</button>
+        <button class="btn-primary" onclick="closeDoctorSoapModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+      
+      <div style="display:flex; gap:12px; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+        <button class="nav-tab-btn active" id="auth-tab-login" onclick="toggleAuthTab('login')">Sign In</button>
+        <button class="nav-tab-btn" id="auth-tab-register" onclick="toggleAuthTab('register')">Create Account</button>
+      </div>
+
+      <form id="auth-login-form" onsubmit="event.preventDefault(); handleLogin();">
+        <div class="form-field" style="margin-bottom:12px;">
+          <label>Email Address</label>
+          <input type="email" id="login-email" required placeholder="name@example.com" />
+        </div>
+        <div class="form-field" style="margin-bottom:18px;">
+          <label>Password</label>
+          <input type="password" id="login-pwd" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;">Sign In ➔</button>
+      </form>
+
+      <form id="auth-register-form" style="display:none;" onsubmit="event.preventDefault(); handleRegister();">
+        <div class="form-field" style="margin-bottom:12px;">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" required placeholder="e.g. Dr. Alex Smith" />
+        </div>
+        <div class="form-field" style="margin-bottom:12px;">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" required placeholder="name@example.com" />
+        </div>
+        <div class="form-field" style="margin-bottom:18px;">
+          <label>Password (Min 6 chars)</label>
+          <input type="password" id="reg-pwd" required minlength="6" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;">Create Account ➔</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="static/js/app.js"></script>
+</body>
+</html>

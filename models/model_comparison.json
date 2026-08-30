@@ -1,0 +1,15 @@
+{
+  "Random Forest": {
+    "accuracy": 0.9638,
+    "f1_score": 0.9639
+  },
+  "Gradient Boosting": {
+    "accuracy": 0.97,
+    "f1_score": 0.9696
+  },
+  "SVM": {
+    "accuracy": 0.8708,
+    "f1_score": 0.8773
+  },
+  "best_model": "Gradient Boosting"
+}
