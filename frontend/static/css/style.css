@@ -99,9 +99,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .brand-logo {
@@ -138,37 +140,44 @@ body {
 .nav-tabs {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(17, 24, 39, 0.7);
-  padding: 4px;
-  border-radius: var(--radius-full);
+  gap: 6px;
+  background: rgba(17, 24, 39, 0.85);
+  padding: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  max-width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .nav-tab-btn {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: var(--text-secondary);
   font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 7px 14px;
-  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .nav-tab-btn:hover {
   color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .nav-tab-btn.active {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.2));
-  color: var(--accent-cyan);
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(139, 92, 246, 0.25));
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
 }
 
 .nav-actions {

@@ -188,34 +188,76 @@
 
         <div class="dash-col-4">
           <div class="glass-card" style="margin-bottom:20px;">
-            <h3 style="font-size:16px; margin-bottom:12px;">Quick Services</h3>
-            <div class="quick-actions-grid" style="grid-template-columns:1fr;">
-              <div class="action-btn-tile" onclick="switchTab('assess')">
-                <div class="action-tile-icon">🧪</div>
+            <h3 style="font-size:16px; margin-bottom:12px; color:#38bdf8;">⚡ All Clinical & AI Modules</h3>
+            <div class="quick-actions-grid" style="grid-template-columns:1fr; gap:8px;">
+              <div class="action-btn-tile" onclick="switchTab('assess')" style="cursor:pointer;">
+                <div class="action-tile-icon">📋</div>
                 <div>
                   <div class="action-tile-title">Comprehensive Screening</div>
-                  <div class="action-tile-sub">Input TSH, T3, TT4 & symptoms</div>
+                  <div class="action-tile-sub">Guided form & symptoms input</div>
                 </div>
               </div>
-              <div class="action-btn-tile" onclick="switchTab('ocr')">
+              <div class="action-btn-tile" onclick="switchTab('modellab')" style="cursor:pointer; border-color:rgba(56,189,248,0.3);">
+                <div class="action-tile-icon">🔬</div>
+                <div>
+                  <div class="action-tile-title">Model Laboratory (8 ML Models)</div>
+                  <div class="action-tile-sub">CatBoost, XGBoost, Autoencoder, Stacking</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('ultrasound')" style="cursor:pointer; border-color:rgba(20,184,166,0.3);">
+                <div class="action-tile-icon">📷</div>
+                <div>
+                  <div class="action-tile-title">Ultrasound & ACR TI-RADS</div>
+                  <div class="action-tile-sub">Nodule segmentation, morphology & FNA</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('trajectory')" style="cursor:pointer; border-color:rgba(245,158,11,0.3);">
+                <div class="action-tile-icon">📊</div>
+                <div>
+                  <div class="action-tile-title">Trajectory AI & Clinical NLP</div>
+                  <div class="action-tile-sub">Shift velocity, forecast & titration</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('explainability')" style="cursor:pointer; border-color:rgba(236,72,153,0.3);">
+                <div class="action-tile-icon">🧠</div>
+                <div>
+                  <div class="action-tile-title">FT-Transformer & XAI Studio</div>
+                  <div class="action-tile-sub">Self-attention, SHAP, what-if & FHIR R4</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('ocr')" style="cursor:pointer;">
                 <div class="action-tile-icon">📑</div>
                 <div>
                   <div class="action-tile-title">Scan Lab PDF Report</div>
-                  <div class="action-tile-sub">Extract biomarkers with verification</div>
+                  <div class="action-tile-sub">Automated OCR biomarker parsing</div>
                 </div>
               </div>
-              <div class="action-btn-tile" onclick="switchTab('compare')">
+              <div class="action-btn-tile" onclick="switchTab('thyrobot')" style="cursor:pointer;">
+                <div class="action-tile-icon">💬</div>
+                <div>
+                  <div class="action-tile-title">ThyroBot Assistant</div>
+                  <div class="action-tile-sub">Interactive AI endocrinology guidance</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('simulator')" style="cursor:pointer;">
+                <div class="action-tile-icon">🎛️</div>
+                <div>
+                  <div class="action-tile-title">What-If Biomarker Simulator</div>
+                  <div class="action-tile-sub">Real-time hormone slider exploration</div>
+                </div>
+              </div>
+              <div class="action-btn-tile" onclick="switchTab('compare')" style="cursor:pointer;">
                 <div class="action-tile-icon">⚖️</div>
                 <div>
                   <div class="action-tile-title">Compare 2 Lab Reports</div>
-                  <div class="action-tile-sub">Longitudinal delta & trajectory</div>
+                  <div class="action-tile-sub">Longitudinal biomarker deltas</div>
                 </div>
               </div>
-              <div class="action-btn-tile" onclick="switchTab('simulator')">
-                <div class="action-tile-icon">🎛️</div>
+              <div class="action-btn-tile" onclick="switchTab('trends')" style="cursor:pointer;">
+                <div class="action-tile-icon">📈</div>
                 <div>
-                  <div class="action-tile-title">What-If Simulator</div>
-                  <div class="action-tile-sub">Live biomarker slider exploration</div>
+                  <div class="action-tile-title">Longitudinal Trends</div>
+                  <div class="action-tile-sub">Historical biomarker tracking charts</div>
                 </div>
               </div>
             </div>
