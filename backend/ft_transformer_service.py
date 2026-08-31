@@ -24,7 +24,7 @@ class TabularFeatureTokenizerTransformer:
         self.feature_names = feature_names or KEY_ATTENTION_FEATURES
         self.embed_dim = embed_dim
         self.num_heads = num_heads
-        self.classes = ['hyperthyroid', 'hypothyroid', 'negative', 'subclinical_hyperthyroid', 'subclinical_hypothyroid']
+        self.classes = ['hyperthyroid', 'hypothyroid', 'normal']
         self._init_weights()
 
     def _init_weights(self):
@@ -128,21 +128,12 @@ class TabularFeatureTokenizerTransformer:
         logits = np.dot(pooled, self.W_cls) + self.b_cls
 
         # Calibrate logits with clinical hormone boundary logic
-        # Negative: TSH 0.4-4.5, FTI 70-140
-        # Subclinical Hypo: TSH > 4.5, FTI normal
-        # Overt Hypo: TSH > 10.0, FTI < 70
-        # Subclinical Hyper: TSH < 0.4, FTI normal
-        # Overt Hyper: TSH < 0.1, FTI > 140
-        if tsh_val > 10.0 and fti_val < 70.0:
-            logits[self.classes.index('hypothyroid')] += 5.0
-        elif tsh_val > 4.5:
-            logits[self.classes.index('subclinical_hypothyroid')] += 4.5
-        elif tsh_val < 0.1 and fti_val > 140.0:
-            logits[self.classes.index('hyperthyroid')] += 5.0
-        elif tsh_val < 0.4:
-            logits[self.classes.index('subclinical_hyperthyroid')] += 4.5
+        if tsh_val > 4.5 or (tsh_val > 3.5 and fti_val < 85.0):
+            logits[self.classes.index('hypothyroid')] += 5.5
+        elif tsh_val < 0.4 or fti_val > 140.0:
+            logits[self.classes.index('hyperthyroid')] += 5.5
         else:
-            logits[self.classes.index('negative')] += 4.0
+            logits[self.classes.index('normal')] += 4.5
 
         probabilities = softmax(logits)
         pred_idx = int(np.argmax(probabilities))

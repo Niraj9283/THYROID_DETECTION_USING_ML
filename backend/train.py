@@ -28,7 +28,7 @@ def load_and_preprocess(path):
     df = pd.read_csv(path)
 
     # Drop TBG (97%+ missing), patient_id (identifier), and TBG_measured
-    drop_cols = ['patient_id', 'TBG', 'TBG_measured']
+    drop_cols = ['patient_id', 'TBG', 'TBG_measured', 'class', 'source']
     df.drop(columns=[c for c in drop_cols if c in df.columns], inplace=True)
 
     # Encode binary yes/no columns
@@ -40,17 +40,28 @@ def load_and_preprocess(path):
                    'FTI_measured']
     for col in binary_cols:
         if col in df.columns:
-            df[col] = df[col].map({'t': 1, 'f': 0, 'y': 1, 'n': 0,
-                                   'M': 1, 'F': 0}).fillna(0).astype(int)
+            if df[col].dtype == object:
+                df[col] = df[col].map({'t': 1, 'f': 0, 'y': 1, 'n': 0, 'M': 1, 'F': 0, 'true': 1, 'false': 0}).fillna(0).astype(int)
+            else:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
 
     # Encode sex
     if 'sex' in df.columns:
-        df['sex'] = df['sex'].map({'M': 1, 'F': 0}).fillna(0.5)
+        if df['sex'].dtype == object:
+            df['sex'] = df['sex'].map({'M': 1, 'F': 0, 'm': 1, 'f': 0, 'male': 1, 'female': 0}).fillna(0.5)
+        else:
+            df['sex'] = pd.to_numeric(df['sex'], errors='coerce').fillna(0.5)
 
     # Encode referral_source
     if 'referral_source' in df.columns:
         le_ref = LabelEncoder()
         df['referral_source'] = le_ref.fit_transform(df['referral_source'].astype(str))
+
+    # Convert numeric biomarkers
+    numeric_cols = ['age', 'TSH', 'T3', 'TT4', 'T4U', 'FTI']
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
 
     # Encode target
     le_target = LabelEncoder()

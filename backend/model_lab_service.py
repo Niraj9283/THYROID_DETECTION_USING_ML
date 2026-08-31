@@ -179,7 +179,21 @@ def prepare_input_dataframe(input_data: dict) -> pd.DataFrame:
                 row[feat] = 0.0
         else:
             try:
-                row[feat] = float(val) if val is not None else np.nan
+                fval = float(val) if val is not None else np.nan
+                if not np.isnan(fval):
+                    if feat == 'age' and fval > 1.0:
+                        fval = fval / 100.0
+                    elif feat == 'TSH' and fval > 0.6:
+                        fval = fval / 1000.0
+                    elif feat == 'T3' and fval > 0.4:
+                        fval = fval / 100.0
+                    elif feat == 'TT4' and fval > 1.0:
+                        fval = fval / 1000.0
+                    elif feat == 'T4U' and fval > 0.5:
+                        fval = fval / 10.0
+                    elif feat == 'FTI' and fval > 1.0:
+                        fval = fval / 1000.0
+                row[feat] = fval
             except (ValueError, TypeError):
                 row[feat] = np.nan
 

@@ -109,7 +109,7 @@ def load_and_preprocess(path):
     df = pd.read_csv(path)
 
     # Drop identifiers and columns with >95% missing values
-    drop_cols = ['patient_id', 'TBG', 'TBG_measured']
+    drop_cols = ['patient_id', 'TBG', 'TBG_measured', 'class', 'source']
     df.drop(columns=[c for c in drop_cols if c in df.columns], inplace=True)
 
     # Encode binary clinical indicators
@@ -123,11 +123,17 @@ def load_and_preprocess(path):
     ]
     for col in binary_cols:
         if col in df.columns:
-            df[col] = df[col].map({'t': 1, 'f': 0, 'y': 1, 'n': 0, 'M': 1, 'F': 0}).fillna(0).astype(int)
+            if df[col].dtype == object:
+                df[col] = df[col].map({'t': 1, 'f': 0, 'y': 1, 'n': 0, 'M': 1, 'F': 0, 'true': 1, 'false': 0}).fillna(0).astype(int)
+            else:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
 
     # Encode sex
     if 'sex' in df.columns:
-        df['sex'] = df['sex'].map({'M': 1, 'F': 0}).fillna(0.5)
+        if df['sex'].dtype == object:
+            df['sex'] = df['sex'].map({'M': 1, 'F': 0, 'm': 1, 'f': 0, 'male': 1, 'female': 0}).fillna(0.5)
+        else:
+            df['sex'] = pd.to_numeric(df['sex'], errors='coerce').fillna(0.5)
 
     # Encode referral source
     if 'referral_source' in df.columns:
@@ -159,7 +165,7 @@ def train_autoencoder_screener(X_train, y_train, le_target, feature_names):
     print("Training Unsupervised Autoencoder Anomaly Screener...")
 
     # Identify normal class index
-    neg_idx = np.where(le_target.classes_ == 'negative')[0]
+    neg_idx = np.where((le_target.classes_ == 'negative') | (le_target.classes_ == 'normal'))[0]
     if len(neg_idx) > 0:
         normal_mask = (y_train == neg_idx[0])
         X_normal = X_train[normal_mask]

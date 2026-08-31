@@ -1,9 +1,9 @@
 {
-  "mean_mse": 0.4894,
-  "std_mse": 0.3688,
-  "anomaly_threshold": 1.4114,
+  "mean_mse": 0.1797,
+  "std_mse": 0.2636,
+  "anomaly_threshold": 0.8389,
   "architecture": "Bottleneck Neural Autoencoder (Input -> 16 -> 8 -> 16 -> Output)",
-  "trained_samples": 16971,
+  "trained_samples": 5333,
   "features": [
     "age",
     "sex",
@@ -21,16 +21,10 @@
     "tumor",
     "hypopituitary",
     "psych",
-    "TSH_measured",
     "TSH",
-    "T3_measured",
     "T3",
-    "TT4_measured",
     "TT4",
-    "T4U_measured",
     "T4U",
-    "FTI_measured",
-    "FTI",
-    "referral_source"
+    "FTI"
   ]
 }

@@ -142,6 +142,8 @@ CLINICAL_PROFILES = {
         ]
     }
 }
+CLINICAL_PROFILES['normal'] = CLINICAL_PROFILES['negative']
+
 
 
 def analyze_biomarkers(data: dict) -> list:
@@ -310,17 +312,58 @@ def execute_screening(input_data: dict, assessment_type: str = 'comprehensive') 
     biomarker range analysis, and explainability breakdown.
     """
     # 1. Clean and align inputs to model features
+    binary_cols = [
+        'on_thyroxine', 'query_on_thyroxine', 'on_antithyroid_medication',
+        'sick', 'pregnant', 'thyroid_surgery', 'I131_treatment',
+        'query_hypothyroid', 'query_hyperthyroid', 'lithium', 'goitre',
+        'tumor', 'hypopituitary', 'psych',
+        'TSH_measured', 'T3_measured', 'TT4_measured', 'T4U_measured',
+        'FTI_measured'
+    ]
+
     row = {}
     for feat in feature_names:
-        row[feat] = input_data.get(feat, np.nan)
+        val = input_data.get(feat, np.nan)
+        if feat == 'sex':
+            if str(val).upper() in ['M', '1', 'MALE']:
+                row[feat] = 1.0
+            elif str(val).upper() in ['F', '0', 'FEMALE']:
+                row[feat] = 0.0
+            else:
+                row[feat] = 0.5
+        elif feat in binary_cols:
+            if str(val).lower() in ['t', 'y', '1', 'true', 'yes']:
+                row[feat] = 1.0
+            elif str(val).lower() in ['f', 'n', '0', 'false', 'no']:
+                row[feat] = 0.0
+            else:
+                row[feat] = 0.0
+        elif feat == 'referral_source':
+            try:
+                row[feat] = float(val) if val is not None and not np.isnan(float(val)) else 0.0
+            except (ValueError, TypeError):
+                row[feat] = 0.0
+        else:
+            try:
+                fval = float(val) if val is not None else np.nan
+                if not np.isnan(fval):
+                    if feat == 'age' and fval > 1.0:
+                        fval = fval / 100.0
+                    elif feat == 'TSH' and fval > 0.6:
+                        fval = fval / 1000.0
+                    elif feat == 'T3' and fval > 0.4:
+                        fval = fval / 100.0
+                    elif feat == 'TT4' and fval > 1.0:
+                        fval = fval / 1000.0
+                    elif feat == 'T4U' and fval > 0.5:
+                        fval = fval / 10.0
+                    elif feat == 'FTI' and fval > 1.0:
+                        fval = fval / 1000.0
+                row[feat] = fval
+            except (ValueError, TypeError):
+                row[feat] = np.nan
 
     df_input = pd.DataFrame([row])
-
-    # Convert numeric columns safely
-    numeric_fields = ['age', 'TSH', 'T3', 'TT4', 'T4U', 'FTI']
-    for field in numeric_fields:
-        if field in df_input.columns:
-            df_input[field] = pd.to_numeric(df_input[field], errors='coerce')
 
     # 2. Run model prediction & probabilities
     prediction_encoded = model.predict(df_input)[0]
