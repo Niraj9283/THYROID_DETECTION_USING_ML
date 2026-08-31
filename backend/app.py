@@ -22,6 +22,20 @@ from backend.doctor_service import generate_clinical_soap_note
 from backend.report_service import generate_pdf_report
 from backend.ocr_service import extract_text_from_pdf, parse_lab_parameters_from_text
 from backend.rag_service import generate_bot_response
+from backend.model_lab_service import (
+    get_laboratory_benchmarks, run_model_laboratory_tournament, screen_anomalies_autoencoder
+)
+from backend.ultrasound_service import (
+    evaluate_tirads_score, generate_ultrasound_slice_with_segmentation,
+    perform_multimodal_fusion, PRESET_ULTRASOUND_SCENARIOS
+)
+from backend.trajectory_service import analyze_longitudinal_trajectory
+from backend.clinical_nlp_service import parse_clinical_notes_nlp
+from backend.ft_transformer_service import run_ft_transformer_inference
+from backend.explainability_service import calculate_feature_attributions, generate_counterfactual_explanation
+from backend.fhir_report_service import generate_fhir_r4_bundle
+
+
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload limit
@@ -289,6 +303,206 @@ def simulate_biomarkers():
         return jsonify(res)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# -------------------------------------------------------------
+# Model Laboratory — Multi-Family Benchmark & Tournament API
+# -------------------------------------------------------------
+@app.route('/api/model-lab/benchmarks', methods=['GET'])
+def model_lab_benchmarks():
+    data = get_laboratory_benchmarks()
+    return jsonify(data)
+
+
+@app.route('/api/model-lab/predict-all', methods=['POST', 'OPTIONS'])
+def model_lab_predict_all():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        results = run_model_laboratory_tournament(data)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"Model laboratory tournament failed: {str(e)}"}), 500
+
+
+@app.route('/api/model-lab/anomaly-screen', methods=['POST', 'OPTIONS'])
+def model_lab_anomaly_screen():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        results = screen_anomalies_autoencoder(data)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"Anomaly screening failed: {str(e)}"}), 500
+
+
+
+
+# -------------------------------------------------------------
+# Phase 2: Multimodal Ultrasound AI & ACR TI-RADS Analysis
+# -------------------------------------------------------------
+@app.route('/api/ultrasound/presets', methods=['GET'])
+def ultrasound_presets():
+    return jsonify(PRESET_ULTRASOUND_SCENARIOS)
+
+
+@app.route('/api/ultrasound/analyze', methods=['POST', 'OPTIONS'])
+def ultrasound_analyze():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        composition = data.get('composition', 'solid')
+        echogenicity = data.get('echogenicity', 'hypoechoic')
+        shape = data.get('shape', 'wider_than_tall')
+        margin = data.get('margin', 'smooth')
+        echogenic_foci = data.get('echogenic_foci', 'none')
+        nodule_size_cm = float(data.get('nodule_size_cm', 1.8))
+        preset_key = data.get('preset_key', 'tr5_papillary_carcinoma')
+        custom_params = data.get('custom_params', None)
+
+        tirads_results = evaluate_tirads_score(
+            composition=composition,
+            echogenicity=echogenicity,
+            shape=shape,
+            margin=margin,
+            echogenic_foci=echogenic_foci,
+            nodule_size_cm=nodule_size_cm
+        )
+
+        visual_results = generate_ultrasound_slice_with_segmentation(
+            scenario_key=preset_key,
+            custom_params=custom_params
+        )
+
+        response_payload = {**tirads_results, **visual_results}
+        return jsonify(response_payload)
+    except Exception as e:
+        return jsonify({'error': f"Ultrasound analysis failed: {str(e)}"}), 500
+
+
+@app.route('/api/multimodal/fuse', methods=['POST', 'OPTIONS'])
+def multimodal_fuse():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        tabular_data = data.get('tabular_data', {})
+        ultrasound_data = data.get('ultrasound_data', {})
+
+        fusion_result = perform_multimodal_fusion(tabular_data, ultrasound_data)
+        return jsonify(fusion_result)
+    except Exception as e:
+        return jsonify({'error': f"Multimodal fusion failed: {str(e)}"}), 500
+
+
+# -------------------------------------------------------------
+# Phase 2: Longitudinal Patient Trajectory Tracking
+# -------------------------------------------------------------
+@app.route('/api/trajectory/analyze', methods=['POST', 'OPTIONS'])
+def trajectory_analyze():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        visits = data.get('visits', [])
+        results = analyze_longitudinal_trajectory(visits)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"Trajectory analysis failed: {str(e)}"}), 500
+
+
+# -------------------------------------------------------------
+# Phase 2: Clinical Symptoms NLP Parser
+# -------------------------------------------------------------
+@app.route('/api/clinical-nlp/extract', methods=['POST', 'OPTIONS'])
+def clinical_nlp_extract():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        text = data.get('clinical_text', '')
+        results = parse_clinical_notes_nlp(text)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"Clinical NLP extraction failed: {str(e)}"}), 500
+
+
+
+# -------------------------------------------------------------
+# Phase 3 & 4: FT-Transformer & Clinical Explainability (XAI)
+# -------------------------------------------------------------
+@app.route('/api/explainability/ft-transformer', methods=['POST', 'OPTIONS'])
+def explainability_ft_transformer():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        results = run_ft_transformer_inference(data)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"FT-Transformer inference failed: {str(e)}"}), 500
+
+
+@app.route('/api/explainability/attributions', methods=['POST', 'OPTIONS'])
+def explainability_attributions():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        results = calculate_feature_attributions(data)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"Feature attribution calculation failed: {str(e)}"}), 500
+
+
+@app.route('/api/explainability/counterfactual', methods=['POST', 'OPTIONS'])
+def explainability_counterfactual():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        results = generate_counterfactual_explanation(data)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({'error': f"Counterfactual generation failed: {str(e)}"}), 500
+
+
+# -------------------------------------------------------------
+# Phase 4: Standardized HL7 FHIR R4 Diagnostic Dossier Export
+# -------------------------------------------------------------
+@app.route('/api/fhir/export', methods=['POST', 'OPTIONS'])
+def fhir_export():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    try:
+        patient_data = data.get('patient_data', {})
+        model_results = data.get('model_results', {})
+        ultrasound_data = data.get('ultrasound_data', {})
+        trajectory_data = data.get('trajectory_data', {})
+
+        bundle = generate_fhir_r4_bundle(
+            patient_data=patient_data,
+            model_results=model_results,
+            ultrasound_data=ultrasound_data,
+            trajectory_data=trajectory_data
+        )
+        return jsonify(bundle)
+    except Exception as e:
+        return jsonify({'error': f"FHIR bundle export failed: {str(e)}"}), 500
 
 
 # -------------------------------------------------------------

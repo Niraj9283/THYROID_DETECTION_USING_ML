@@ -63,8 +63,17 @@
         <button class="nav-tab-btn" data-tab="thyrobot" onclick="switchTab('thyrobot')">
           <span>💬</span> ThyroBot
         </button>
-        <button class="nav-tab-btn" data-tab="modelcard" onclick="switchTab('modelcard')">
-          <span>🔬</span> Model Card
+        <button class="nav-tab-btn" data-tab="modellab" onclick="switchTab('modellab')">
+          <span>🔬</span> Model Lab
+        </button>
+        <button class="nav-tab-btn" data-tab="ultrasound" onclick="switchTab('ultrasound')">
+          <span>📷</span> Ultrasound & TI-RADS
+        </button>
+        <button class="nav-tab-btn" data-tab="trajectory" onclick="switchTab('trajectory')">
+          <span>📊</span> Trajectory AI
+        </button>
+        <button class="nav-tab-btn" data-tab="explainability" onclick="switchTab('explainability')">
+          <span>🧠</span> FT-Transformer & XAI
         </button>
       </nav>
 
@@ -948,91 +957,836 @@
       </div>
     </section>
 
-    <!-- TAB 8: MODEL CARD & EVALUATION TRANSPARENCY -->
-    <section id="tab-modelcard" class="tab-view">
+    <!-- TAB 8: MODEL LABORATORY & TOURNAMENT BENCHMARK -->
+    <section id="tab-modellab" class="tab-view">
       <div class="section-header">
-        <div class="section-tag">Machine Learning Transparency</div>
-        <h2 class="section-title">Multi-Model Architecture & Evaluation Card</h2>
+        <div class="section-tag">🔬 Multi-Family AI Laboratory</div>
+        <h2 class="section-title">Model Laboratory & Clinical Tournament</h2>
         <p class="section-desc">
-          Full transparency into dataset methodology, ensemble consensus metrics, and limitations.
+          Live parallel inference across tree ensembles, tabular deep learning, stacking meta-learners, and unsupervised autoencoder anomaly screening.
         </p>
       </div>
 
-      <div class="dashboard-grid">
-        <div class="dash-col-6">
-          <div class="glass-card" style="margin-bottom:20px;">
-            <h3 style="font-size:16px; margin-bottom:12px;">Ensemble Models Registry</h3>
-            <div style="overflow-x:auto;">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Architecture</th>
-                    <th>Accuracy</th>
-                    <th>F1 Score</th>
-                    <th>Role in Ensemble</th>
-                  </tr>
-                </thead>
-                <tbody id="models-comp-tbody">
-                  <tr>
-                    <td><strong>Gradient Boosting</strong></td>
-                    <td>97.00%</td>
-                    <td>96.96%</td>
-                    <td><span class="status-pill normal">Primary (45% Wt)</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Random Forest</strong></td>
-                    <td>96.38%</td>
-                    <td>96.39%</td>
-                    <td><span class="status-pill normal">Secondary (40% Wt)</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>SVM (RBF Kernel)</strong></td>
-                    <td>87.08%</td>
-                    <td>87.73%</td>
-                    <td><span class="status-pill low">Calibrator (15% Wt)</span></td>
-                  </tr>
-                </tbody>
-              </table>
+      <!-- Quick Preset Selector & Runner Bar -->
+      <div class="glass-card" style="margin-bottom: 24px; padding: 20px;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px;">
+          <div>
+            <h3 style="font-size:16px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">
+              ⚔️ Multi-Model Diagnostic Tournament Arena
+            </h3>
+            <p style="font-size:13px; color:var(--text-muted); margin:0;">
+              Execute all 8 model families simultaneously on clinical biomarker inputs to evaluate classifier consensus & anomaly signals.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-secondary" style="font-size:12.5px; padding:7px 14px;" onclick="loadLabPreset('normal')">Preset: Normal</button>
+            <button class="btn-secondary" style="font-size:12.5px; padding:7px 14px;" onclick="loadLabPreset('sub_hypo')">Preset: Subclinical Hypo</button>
+            <button class="btn-secondary" style="font-size:12.5px; padding:7px 14px;" onclick="loadLabPreset('overt_hypo')">Preset: Overt Hypo</button>
+            <button class="btn-secondary" style="font-size:12.5px; padding:7px 14px;" onclick="loadLabPreset('sub_hyper')">Preset: Subclinical Hyper</button>
+            <button class="btn-secondary" style="font-size:12.5px; padding:7px 14px; border-color:#f59e0b;" onclick="loadLabPreset('outlier')">Preset: Anomaly Outlier</button>
+          </div>
+        </div>
+
+        <!-- Quick Biomarker Inputs for Tournament -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:16px;">
+          <div class="form-field">
+            <label style="font-size:11.5px;">TSH (mIU/L)</label>
+            <input type="number" id="lab-input-tsh" step="0.01" value="2.4" />
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">T3 (nmol/L)</label>
+            <input type="number" id="lab-input-t3" step="0.01" value="2.1" />
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">TT4 (nmol/L)</label>
+            <input type="number" id="lab-input-tt4" step="0.1" value="108.0" />
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">T4U</label>
+            <input type="number" id="lab-input-t4u" step="0.01" value="1.02" />
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">FTI</label>
+            <input type="number" id="lab-input-fti" step="0.1" value="105.0" />
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">Age</label>
+            <input type="number" id="lab-input-age" value="45" />
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">Sex</label>
+            <select id="lab-input-sex">
+              <option value="F">Female (F)</option>
+              <option value="M">Male (M)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label style="font-size:11.5px;">On Thyroxine</label>
+            <select id="lab-input-thyroxine">
+              <option value="f">No (f)</option>
+              <option value="t">Yes (t)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-run-tournament" style="width:100%; font-size:14px; padding:12px;" onclick="runLaboratoryTournament()">
+          🚀 Run Model Tournament & Anomaly Screening
+        </button>
+      </div>
+
+      <!-- Tournament Live Results Display -->
+      <div id="lab-tournament-results" style="display:none; margin-bottom:28px;">
+        <!-- Top Banner: Champion Prediction & Anomaly Radar -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px; margin-bottom:20px;">
+          <!-- Champion Consensus Card -->
+          <div class="glass-card" style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border:1px solid #38bdf8;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="status-pill normal" style="background:rgba(56, 189, 248, 0.15); color:#38bdf8;">
+                🏆 Meta-Ensemble Consensus
+              </span>
+              <span id="lab-consensus-score" style="font-size:12px; font-weight:700; color:#38bdf8;">8/8 Models</span>
+            </div>
+            <h3 id="lab-champion-diagnosis" style="font-size:22px; font-weight:800; color:#ffffff; margin-bottom:6px;">Negative (Normal)</h3>
+            <p id="lab-champion-conf" style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Calibrated Probability: 96.8%</p>
+            <div id="lab-disagreement-box" style="display:none; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); border-radius:8px; font-size:12px; color:#f59e0b;">
+              Multi-model divergence detected.
             </div>
           </div>
 
-          <div class="glass-card">
-            <h3 style="font-size:16px; margin-bottom:10px;">Evaluation Methodology</h3>
-            <ul style="padding-left:20px; font-size:13.5px; color:var(--text-secondary); line-height:1.7;">
-              <li><strong>Dataset:</strong> 30,000 anonymized clinical thyroid screening records with 27 raw feature fields.</li>
-              <li><strong>Train/Test Split:</strong> 80% training (24,000 samples) and 20% stratified testing (6,000 samples).</li>
-              <li><strong>Ensemble Voting:</strong> Weighted soft-voting with probability calibration across individual models.</li>
+          <!-- Autoencoder Anomaly Radar Card -->
+          <div class="glass-card" id="lab-autoencoder-card" style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border:1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="status-pill" id="lab-ae-badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981;">
+                🧠 Autoencoder Screener
+              </span>
+              <span id="lab-ae-score-txt" style="font-size:12px; font-weight:600; color:var(--text-muted);">Recon MSE: 0.42</span>
+            </div>
+            <h4 id="lab-ae-status-title" style="font-size:16px; font-weight:700; margin-bottom:6px; color:#ffffff;">Standard Physiological Profile</h4>
+            <p id="lab-ae-guidance-txt" style="font-size:12.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:10px;">
+              Biomarkers conform to standard historical distributions.
+            </p>
+            <div id="lab-ae-deviations" style="font-size:11.5px; color:var(--text-muted);"></div>
+          </div>
+        </div>
+
+        <!-- 8-Model Battle Cards Grid -->
+        <h3 style="font-size:16px; font-weight:700; color:var(--text-primary); margin-bottom:14px;">
+          🔬 Model Family Live Predictions & Probabilities
+        </h3>
+        <div id="lab-model-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-bottom:20px;">
+          <!-- Populated dynamically by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Clinical Benchmark Leaderboard -->
+      <div class="glass-card" style="margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 style="font-size:16px; font-weight:700; margin:0;">📊 Model Laboratory Benchmark Leaderboard</h3>
+            <p style="font-size:12.5px; color:var(--text-muted); margin:4px 0 0 0;">
+              Rigorous empirical evaluation across 30,000 stratified samples measuring discrimination and calibration.
+            </p>
+          </div>
+          <span style="font-size:11.5px; color:#38bdf8; background:rgba(56, 189, 248, 0.1); padding:4px 10px; border-radius:6px;">
+            5-Fold Stratified CV
+          </span>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="custom-table" id="lab-benchmarks-table">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>Model Family</th>
+                <th>Accuracy</th>
+                <th>Balanced Acc</th>
+                <th>Macro F1</th>
+                <th>ROC-AUC (OvR)</th>
+                <th>ECE Calibration</th>
+                <th>Brier Score</th>
+              </tr>
+            </thead>
+            <tbody id="lab-benchmarks-tbody">
+              <tr>
+                <td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">
+                  Loading benchmark leaderboard...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Model Laboratory Architecture & Transparency Details -->
+      <div class="dashboard-grid">
+        <div class="dash-col-6">
+          <div class="glass-card" style="margin-bottom:20px;">
+            <h3 style="font-size:15px; margin-bottom:10px;">🔬 Model Laboratory Architectures</h3>
+            <ul style="padding-left:18px; font-size:12.5px; color:var(--text-secondary); line-height:1.7;">
+              <li><strong>Stacking Super Learner:</strong> Multi-model meta-learner trained on 5-fold out-of-fold probability vectors to dynamically weigh base classifiers.</li>
+              <li><strong>Gradient Boosted Trees (XGBoost / LightGBM / CatBoost):</strong> Histogram and symmetric split decision trees for non-linear biomarker interactions.</li>
+              <li><strong>Unsupervised Autoencoder:</strong> Bottleneck neural network trained on normal endocrine profiles to detect atypical biomarker combinations via reconstruction loss.</li>
+              <li><strong>Deep Tabular MLP:</strong> Multi-layer neural network with bottleneck projections for continuous feature representation learning.</li>
             </ul>
           </div>
         </div>
 
         <div class="dash-col-6">
-          <div class="glass-card" style="margin-bottom:20px;">
-            <h3 style="font-size:16px; margin-bottom:10px;">Intended vs Non-Intended Use</h3>
-            <div style="margin-bottom:14px;">
-              <strong style="color:var(--risk-low); font-size:13.5px;">✔ Intended Use:</strong>
-              <p style="color:var(--text-secondary); font-size:13px;">
-                Preliminary risk stratification, patient education, reference range comparison, and identifying patients who require endocrinologist consultation.
-              </p>
-            </div>
-            <div>
-              <strong style="color:var(--risk-high); font-size:13.5px;">✖ Non-Intended Use:</strong>
-              <p style="color:var(--text-secondary); font-size:13px;">
-                Automated clinical diagnosis, solitary basis for surgical decisions, or initiating prescription medication without confirmatory laboratory assays.
-              </p>
-            </div>
-          </div>
-
           <div class="glass-card">
-            <h3 style="font-size:16px; margin-bottom:10px;">Known Limitations & Bias Considerations</h3>
-            <p style="color:var(--text-secondary); font-size:13px; line-height:1.6;">
-              Cross-sectional datasets do not account for transient non-thyroidal illness (euthyroid sick syndrome), pregnancy-induced trimester hormone shifts, or lab-specific reference range differences without clinician review.
+            <h3 style="font-size:15px; margin-bottom:10px;">Clinical Intended Use & Calibration Governance</h3>
+            <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.6; margin-bottom:10px;">
+              <strong>Intended Use:</strong> Educational decision support, multi-model consensus validation, anomaly flagging, and laboratory trend monitoring.
+            </p>
+            <p style="font-size:12.5px; color:var(--risk-high); line-height:1.6; margin:0;">
+              <strong>Non-Intended Use:</strong> Solitary diagnostic confirmation or autonomous prescription decisions without clinician review.
             </p>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- TAB 8: ULTRASOUND & ACR TI-RADS AI STUDIO -->
+    <section id="tab-ultrasound" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">
+          <span class="pulse-dot" style="background:#06b6d4;"></span> Multimodal Imaging & Anatomical AI
+        </div>
+        <h2 style="font-size:24px; font-weight:700; margin-top:6px; color:#f8fafc;">
+          Thyroid Ultrasound & ACR TI-RADS Studio
+        </h2>
+        <p style="color:var(--text-secondary); font-size:13.5px; margin-top:4px;">
+          Standardized American College of Radiology (ACR) TI-RADS Risk Stratification, Computer Vision Contour Segmentation, and Multimodal Late-Fusion Synthesis.
+        </p>
+      </div>
+
+      <!-- Preset Ultrasound Scenarios -->
+      <div class="glass-card" style="margin-bottom:20px; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span style="font-size:13px; font-weight:600; color:#38bdf8;">
+            Select Clinical Ultrasound Scenario:
+          </span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="loadUltrasoundPreset('tr1_benign_cyst')">
+              Preset: TR1 Benign Cyst
+            </button>
+            <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="loadUltrasoundPreset('tr3_follicular_adenoma')">
+              Preset: TR3 Follicular Adenoma
+            </button>
+            <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="loadUltrasoundPreset('tr4_suspicious_nodule')">
+              Preset: TR4 Suspicious Nodule
+            </button>
+            <button class="btn-secondary" style="font-size:12px; padding:6px 12px; border-color:rgba(239,68,68,0.5);" onclick="loadUltrasoundPreset('tr5_papillary_carcinoma')">
+              Preset: TR5 Papillary Carcinoma
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Ultrasound Grid -->
+      <div class="dash-grid-12" style="margin-bottom:20px;">
+        <!-- Left: Image & Segmentation Canvas -->
+        <div class="dash-col-6">
+          <div class="glass-card" style="height:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:16px; margin:0; color:#38bdf8;">
+                🔬 B-Mode Ultrasound & U-Net Segmentation
+              </h3>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-secondary" id="btn-toggle-us-view" style="font-size:11px; padding:4px 8px;" onclick="toggleUltrasoundOverlay()">
+                  Toggle Raw / Overlay
+                </button>
+              </div>
+            </div>
+
+            <!-- Image Viewport -->
+            <div style="background:#020617; border-radius:10px; border:1px solid rgba(255,255,255,0.08); padding:10px; text-align:center; min-height:280px; display:flex; align-items:center; justify-content:center;">
+              <img id="us-display-img" src="" alt="Thyroid Ultrasound" style="max-width:100%; max-height:300px; border-radius:8px; display:none;" />
+              <div id="us-placeholder-text" style="color:var(--text-muted); font-size:13px;">
+                Click "Run Ultrasound Analysis" to generate slice & contour segmentation.
+              </div>
+            </div>
+
+            <!-- Morphological Quantifications -->
+            <div style="margin-top:16px;">
+              <h4 style="font-size:13px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
+                Automated Morphology Measurements
+              </h4>
+              <div class="dash-grid-12" id="us-morphology-grid">
+                <div class="dash-col-4">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:11px; color:var(--text-muted);">Major Axis (W)</div>
+                    <div style="font-size:14px; font-weight:700; color:#38bdf8;" id="us-major-axis">-- mm</div>
+                  </div>
+                </div>
+                <div class="dash-col-4">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:11px; color:var(--text-muted);">Minor Axis (H)</div>
+                    <div style="font-size:14px; font-weight:700; color:#38bdf8;" id="us-minor-axis">-- mm</div>
+                  </div>
+                </div>
+                <div class="dash-col-4">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:11px; color:var(--text-muted);">Aspect Ratio (H/W)</div>
+                    <div style="font-size:14px; font-weight:700; color:#f59e0b;" id="us-aspect-ratio">--</div>
+                  </div>
+                </div>
+                <div class="dash-col-6" style="margin-top:8px;">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:11px; color:var(--text-muted);">Shape Specificity</div>
+                    <div style="font-size:13px; font-weight:600;" id="us-shape-class">--</div>
+                  </div>
+                </div>
+                <div class="dash-col-6" style="margin-top:8px;">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:11px; color:var(--text-muted);">Estimated Volume</div>
+                    <div style="font-size:13px; font-weight:600; color:#10b981;" id="us-volume">-- mL</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: ACR TI-RADS Criteria Form & Scoring -->
+        <div class="dash-col-6">
+          <div class="glass-card" style="height:100%;">
+            <h3 style="font-size:16px; margin-bottom:12px; color:#38bdf8;">
+              📋 ACR TI-RADS Scoring Matrix
+            </h3>
+
+            <div class="dash-grid-12" style="gap:10px;">
+              <div class="dash-col-6 form-field">
+                <label style="font-size:11.5px;">1. Composition</label>
+                <select id="tirads-composition" style="font-size:12px; padding:6px 10px;">
+                  <option value="cystic">Cystic / Anechoic (0 pt)</option>
+                  <option value="spongiform">Spongiform (0 pt)</option>
+                  <option value="mixed">Mixed Cystic/Solid (1 pt)</option>
+                  <option value="solid" selected>Solid or almost solid (2 pt)</option>
+                </select>
+              </div>
+
+              <div class="dash-col-6 form-field">
+                <label style="font-size:11.5px;">2. Echogenicity</label>
+                <select id="tirads-echogenicity" style="font-size:12px; padding:6px 10px;">
+                  <option value="anechoic">Anechoic (0 pt)</option>
+                  <option value="hyperechoic">Hyperechoic / Isoechoic (1 pt)</option>
+                  <option value="hypoechoic">Hypoechoic (2 pt)</option>
+                  <option value="very_hypoechoic" selected>Very Hypoechoic (3 pt)</option>
+                </select>
+              </div>
+
+              <div class="dash-col-6 form-field">
+                <label style="font-size:11.5px;">3. Shape</label>
+                <select id="tirads-shape" style="font-size:12px; padding:6px 10px;">
+                  <option value="wider_than_tall">Wider-than-tall (0 pt)</option>
+                  <option value="taller_than_wide" selected>Taller-than-wide (3 pt)</option>
+                </select>
+              </div>
+
+              <div class="dash-col-6 form-field">
+                <label style="font-size:11.5px;">4. Margin</label>
+                <select id="tirads-margin" style="font-size:12px; padding:6px 10px;">
+                  <option value="smooth">Smooth border (0 pt)</option>
+                  <option value="ill_defined">Ill-defined (0 pt)</option>
+                  <option value="lobulated_irregular" selected>Lobulated / Irregular (2 pt)</option>
+                  <option value="extra_thyroidal_extension">Extra-thyroidal extension (3 pt)</option>
+                </select>
+              </div>
+
+              <div class="dash-col-8 form-field">
+                <label style="font-size:11.5px;">5. Echogenic Foci</label>
+                <select id="tirads-foci" style="font-size:12px; padding:6px 10px;">
+                  <option value="none">None or large comet-tail (0 pt)</option>
+                  <option value="macrocalcifications">Macrocalcifications (1 pt)</option>
+                  <option value="peripheral_rim">Peripheral rim calcifications (2 pt)</option>
+                  <option value="punctate_microcalcifications" selected>Punctate Microcalcifications (3 pt)</option>
+                </select>
+              </div>
+
+              <div class="dash-col-4 form-field">
+                <label style="font-size:11.5px;">Nodule Size (cm)</label>
+                <input type="number" id="tirads-size" step="0.1" min="0.1" max="10.0" value="1.4" style="font-size:12px; padding:6px 10px;" />
+              </div>
+            </div>
+
+            <div style="margin-top:14px; display:flex; gap:10px;">
+              <button class="btn-primary" style="flex:1; padding:9px 14px;" onclick="runUltrasoundAnalysis()">
+                ▶ Run Ultrasound Analysis & TI-RADS
+              </button>
+            </div>
+
+            <!-- TI-RADS Diagnostic Output Card -->
+            <div id="tirads-result-card" style="margin-top:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div>
+                  <span class="badge" id="tirads-category-badge" style="font-size:14px; padding:4px 10px;">TR5 — Highly Suspicious</span>
+                  <span style="font-size:12px; color:var(--text-muted); margin-left:8px;" id="tirads-points-text">Total Points: 10</span>
+                </div>
+                <div style="font-size:13px; font-weight:700; color:#ef4444;" id="tirads-risk-pct">
+                  Malignancy Risk: ~57.5%
+                </div>
+              </div>
+
+              <!-- Malignancy Probability Bar -->
+              <div style="background:rgba(255,255,255,0.08); border-radius:6px; height:8px; overflow:hidden; margin-bottom:12px;">
+                <div id="tirads-progress-bar" style="background:linear-gradient(90deg, #10b981, #f59e0b, #ef4444); width:57.5%; height:100%;"></div>
+              </div>
+
+              <!-- FNA & Follow-Up Recommendations -->
+              <div style="font-size:12.5px; line-height:1.5; color:#f1f5f9; margin-bottom:6px;">
+                <strong>FNA Biopsy Guidance:</strong> <span id="tirads-fna-text">FNA Biopsy URGENTLY Recommended (Size 1.4 cm >= 1.0 cm threshold).</span>
+              </div>
+              <div style="font-size:12px; line-height:1.5; color:var(--text-muted);">
+                <strong>Imaging Follow-up:</strong> <span id="tirads-followup-text">Annual ultrasound follow-up for 5 years if >= 0.5 cm.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multimodal Late-Fusion Synthesis Card -->
+      <div class="glass-card" style="margin-bottom:20px; border-left:4px solid #38bdf8;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+          <div>
+            <h3 style="font-size:17px; margin:0; color:#38bdf8;">
+              🌐 Multimodal Late-Fusion Synthesis
+            </h3>
+            <p style="font-size:12.5px; color:var(--text-secondary); margin:4px 0 0 0;">
+              Integrates Functional Endocrine Subtype (Model Lab) + Anatomical Malignancy Risk (Ultrasound TI-RADS)
+            </p>
+          </div>
+          <button class="btn-secondary" style="font-size:12px;" onclick="runMultimodalFusion()">
+            🔄 Re-Synthesize Multimodal Risk
+          </button>
+        </div>
+
+        <div class="dash-grid-12" id="multimodal-fusion-content" style="gap:14px;">
+          <div class="dash-col-4">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:8px;">
+              <div style="font-size:11.5px; color:var(--text-muted);">Functional Laboratory Status</div>
+              <div style="font-size:15px; font-weight:700; color:#38bdf8; margin:4px 0;" id="mm-functional-status">Negative (Normal)</div>
+              <div style="font-size:11.5px; color:var(--text-muted);" id="mm-functional-conf">Confidence: 80.1% | Autoencoder: Normal</div>
+            </div>
+          </div>
+
+          <div class="dash-col-4">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:8px;">
+              <div style="font-size:11.5px; color:var(--text-muted);">Anatomical Ultrasound Risk</div>
+              <div style="font-size:15px; font-weight:700; color:#ef4444; margin:4px 0;" id="mm-anatomical-status">TR5 — Highly Suspicious</div>
+              <div style="font-size:11.5px; color:var(--text-muted);" id="mm-anatomical-risk">Malignancy Risk: ~57.5% | FNA: Urgent</div>
+            </div>
+          </div>
+
+          <div class="dash-col-4">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:8px;">
+              <div style="font-size:11.5px; color:var(--text-muted);">Composite Clinical Urgency</div>
+              <div style="font-size:15px; font-weight:700; color:#f59e0b; margin:4px 0;" id="mm-composite-urgency">Moderate - High Priority</div>
+              <div style="font-size:11.5px; color:var(--text-muted);" id="mm-composite-summary">Suspicious Nodule (Euthyroid)</div>
+            </div>
+          </div>
+
+          <div class="dash-col-12" style="margin-top:6px;">
+            <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); padding:14px; border-radius:8px;">
+              <div style="font-size:12.5px; font-weight:700; color:#38bdf8; margin-bottom:4px;">
+                🩺 Multidisciplinary Management & Care Pathway
+              </div>
+              <div style="font-size:12.5px; line-height:1.6; color:#f8fafc;" id="mm-management-plan">
+                Anatomically suspicious nodule (TR5, ~57.5% malignancy risk) with euthyroid hormone levels. Proceed with ultrasound-guided FNA biopsy based on ACR TI-RADS threshold (1.4 cm).
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 9: LONGITUDINAL TRAJECTORY & CLINICAL NLP -->
+    <section id="tab-trajectory" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">
+          <span class="pulse-dot" style="background:#8b5cf6;"></span> Longitudinal Intelligence & Time-Series
+        </div>
+        <h2 style="font-size:24px; font-weight:700; margin-top:6px; color:#f8fafc;">
+          Patient Trajectory & Treatment Response AI
+        </h2>
+        <p style="color:var(--text-secondary); font-size:13.5px; margin-top:4px;">
+          Multi-visit hormonal shift velocity ($\Delta TSH / \Delta t$), 6-month prognostic forecasting, Levothyroxine dosage titration, and Free-Text Clinical NLP symptom extraction.
+        </p>
+      </div>
+
+      <!-- Clinical Symptoms NLP Card -->
+      <div class="glass-card" style="margin-bottom:20px; padding:18px;">
+        <h3 style="font-size:16px; margin-bottom:6px; color:#c084fc;">
+          📝 Clinical Notes NLP & Symptom Extraction
+        </h3>
+        <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">
+          Paste clinical notes, physician consultation transcripts, or patient complaints to extract structured thyroid symptom clusters.
+        </p>
+        
+        <div style="margin-bottom:12px;">
+          <textarea id="nlp-clinical-text" rows="3" style="width:100%; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#f8fafc; padding:10px; font-size:12.5px; resize:vertical;" placeholder="e.g. Patient reports chronic fatigue, cold intolerance, 4kg unexplained weight gain over 3 months, brain fog, and anterior neck tightness. No palpitations."></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <button class="btn-primary" style="padding:7px 16px; font-size:12.5px;" onclick="runClinicalNLPExtraction()">
+            ⚡ Extract Structured Symptoms
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary" style="font-size:11.5px;" onclick="loadNLPPreset('hypo')">Sample: Hypothyroid Note</button>
+            <button class="btn-secondary" style="font-size:11.5px;" onclick="loadNLPPreset('hyper')">Sample: Hyperthyroid Note</button>
+            <button class="btn-secondary" style="font-size:11.5px;" onclick="loadNLPPreset('goiter')">Sample: Goiter Note</button>
+          </div>
+        </div>
+
+        <!-- NLP Output Container -->
+        <div id="nlp-output-container" style="margin-top:14px; display:none; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span class="badge" id="nlp-phenotype-badge">Hypothyroid Symptom Dominance</span>
+            <span style="font-size:12px; color:var(--text-muted);" id="nlp-matched-count">3 Symptoms Extracted</span>
+          </div>
+          
+          <div class="dash-grid-12" style="margin-bottom:10px; gap:10px;">
+            <div class="dash-col-4">
+              <div style="font-size:11px; color:var(--text-muted);">Hypothyroid Burden</div>
+              <div style="font-size:14px; font-weight:700; color:#38bdf8;" id="nlp-hypo-burden">44.4%</div>
+            </div>
+            <div class="dash-col-4">
+              <div style="font-size:11px; color:var(--text-muted);">Hyperthyroid Burden</div>
+              <div style="font-size:14px; font-weight:700; color:#f59e0b;" id="nlp-hyper-burden">0.0%</div>
+            </div>
+            <div class="dash-col-4">
+              <div style="font-size:11px; color:var(--text-muted);">Compressive Burden</div>
+              <div style="font-size:14px; font-weight:700; color:#ef4444;" id="nlp-comp-burden">20.0%</div>
+            </div>
+          </div>
+
+          <div id="nlp-symptoms-tags" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+          <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;" id="nlp-clinical-summary"></div>
+        </div>
+      </div>
+
+      <!-- Multi-Visit Longitudinal Timeline -->
+      <div class="glass-card" style="margin-bottom:20px; padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:14px; gap:10px;">
+          <div>
+            <h3 style="font-size:16px; margin:0; color:#38bdf8;">
+              📅 Multi-Visit Historical Biomarker Record
+            </h3>
+            <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">
+              Record chronological patient lab visits to model velocity trajectories and dosage responses.
+            </p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-secondary" style="font-size:11.5px;" onclick="loadTrajectoryPreset('hypo_progression')">
+              Preset: Hypo Progression
+            </button>
+            <button class="btn-secondary" style="font-size:11.5px;" onclick="loadTrajectoryPreset('euthyroid_control')">
+              Preset: Stable Control
+            </button>
+            <button class="btn-secondary" style="font-size:11.5px;" onclick="loadTrajectoryPreset('over_replacement')">
+              Preset: Over-Replacement
+            </button>
+          </div>
+        </div>
+
+        <!-- Visit Rows Table -->
+        <div style="overflow-x:auto; margin-bottom:14px;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;" id="trajectory-visits-table">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); text-align:left;">
+                <th style="padding:8px;">Visit Date</th>
+                <th style="padding:8px;">TSH (mIU/L)</th>
+                <th style="padding:8px;">Free T4 (pmol/L)</th>
+                <th style="padding:8px;">T3 (nmol/L)</th>
+                <th style="padding:8px;">Medication</th>
+                <th style="padding:8px;">Dose (mcg)</th>
+                <th style="padding:8px; text-align:center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="trajectory-tbody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <button class="btn-secondary" style="font-size:12px;" onclick="addTrajectoryRow()">
+            ➕ Add Lab Visit
+          </button>
+          <button class="btn-primary" style="padding:8px 18px; font-size:13px;" onclick="runTrajectoryAnalysis()">
+            ▶ Compute Trajectory & Titration Response
+          </button>
+        </div>
+      </div>
+
+      <!-- Trajectory Intelligence & Forecast Dashboard -->
+      <div id="trajectory-results-card" style="display:none;">
+        <div class="dash-grid-12" style="margin-bottom:20px; gap:14px;">
+          <!-- Trajectory Pattern & Titration Guidance -->
+          <div class="dash-col-7">
+            <div class="glass-card" style="height:100%;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:16px; margin:0; color:#38bdf8;">
+                  📈 Disease Trajectory Classification
+                </h3>
+                <span class="badge" id="traj-pattern-badge">Active Subclinical Hypothyroid Progression</span>
+              </div>
+
+              <div style="font-size:13px; margin-bottom:12px; line-height:1.6; color:#f8fafc;">
+                <strong>Treatment Response:</strong> <span id="traj-response-text">Borderline / Pending Titration</span>
+              </div>
+
+              <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); padding:14px; border-radius:8px; margin-bottom:14px;">
+                <div style="font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:4px;">
+                  💊 Clinical Dosage Titration Recommendation
+                </div>
+                <div style="font-size:12.5px; line-height:1.6; color:#f8fafc;" id="traj-titration-text">
+                  Loading titration guidance...
+                </div>
+              </div>
+
+              <!-- Key Velocity Metrics -->
+              <div class="dash-grid-12" style="gap:10px;">
+                <div class="dash-col-3">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:10.5px; color:var(--text-muted);">TSH Velocity</div>
+                    <div style="font-size:14px; font-weight:700; color:#f59e0b;" id="traj-tsh-velocity">+0.00 /mo</div>
+                  </div>
+                </div>
+                <div class="dash-col-3">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:10.5px; color:var(--text-muted);">FT4 Velocity</div>
+                    <div style="font-size:14px; font-weight:700; color:#38bdf8;" id="traj-ft4-velocity">+0.00 /mo</div>
+                  </div>
+                </div>
+                <div class="dash-col-3">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:10.5px; color:var(--text-muted);">Volatility CV</div>
+                    <div style="font-size:14px; font-weight:700; color:#10b981;" id="traj-volatility">0.0%</div>
+                  </div>
+                </div>
+                <div class="dash-col-3">
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px;">
+                    <div style="font-size:10.5px; color:var(--text-muted);">Projected 6m TSH</div>
+                    <div style="font-size:14px; font-weight:700; color:#ef4444;" id="traj-projected-tsh">-- mIU/L</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trajectory Timeline Progression Visualizer -->
+          <div class="dash-col-5">
+            <div class="glass-card" style="height:100%;">
+              <h3 style="font-size:16px; margin-bottom:12px; color:#38bdf8;">
+                📊 Timeline Trajectory Flow
+              </h3>
+              <div id="traj-timeline-flow" style="display:flex; flex-direction:column; gap:10px;">
+                <!-- Dynamically populated milestones -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 10: FT-TRANSFORMER & CLINICAL EXPLAINABILITY STUDIO -->
+    <section id="tab-explainability" class="tab-view">
+      <div class="section-header">
+        <div class="section-tag">
+          <span class="pulse-dot" style="background:#ec4899;"></span> Deep Tabular Transformers & Clinical XAI
+        </div>
+        <h2 style="font-size:24px; font-weight:700; margin-top:6px; color:#f8fafc;">
+          FT-Transformer & Explainability Studio
+        </h2>
+        <p style="color:var(--text-secondary); font-size:13.5px; margin-top:4px;">
+          Multi-Head Self-Attention Token Interactions, Local & Global SHAP Feature Attributions, Interactive "What-If" Counterfactual Optimization, and Standardized HL7 FHIR R4 Export.
+        </p>
+      </div>
+
+      <!-- Presets Toolbar -->
+      <div class="glass-card" style="margin-bottom:20px; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span style="font-size:13px; font-weight:600; color:#38bdf8;">
+            Load Clinical Test Profile:
+          </span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-secondary" style="font-size:12px;" onclick="loadXAIPreset('subclinical_hypo')">
+              Preset: Subclinical Hypothyroid
+            </button>
+            <button class="btn-secondary" style="font-size:12px;" onclick="loadXAIPreset('overt_hypo')">
+              Preset: Overt Hypothyroid
+            </button>
+            <button class="btn-secondary" style="font-size:12px;" onclick="loadXAIPreset('hyperthyroid')">
+              Preset: Hyperthyroid / Thyrotoxic
+            </button>
+            <button class="btn-secondary" style="font-size:12px;" onclick="loadXAIPreset('euthyroid')">
+              Preset: Normal Euthyroid
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FT-Transformer Diagnostic & Attention Matrix -->
+      <div class="dash-grid-12" style="margin-bottom:20px; gap:14px;">
+        <!-- Left: FT-Transformer Inference Summary -->
+        <div class="dash-col-4">
+          <div class="glass-card" style="height:100%;">
+            <h3 style="font-size:16px; margin-bottom:12px; color:#38bdf8;">
+              🧠 FT-Transformer Prediction
+            </h3>
+            
+            <div style="margin-bottom:14px;">
+              <span class="badge" id="ftt-pred-badge" style="font-size:15px; padding:6px 14px;">Subclinical Hypothyroid</span>
+              <div style="font-size:13px; color:var(--text-muted); margin-top:6px;" id="ftt-confidence-text">
+                Model Confidence: <strong>94.2%</strong>
+              </div>
+            </div>
+
+            <!-- Probability Bars -->
+            <div style="margin-top:14px;">
+              <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">
+                Calibrated Class Probabilities
+              </h4>
+              <div id="ftt-prob-bars" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div style="margin-top:18px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); font-size:11.5px; color:var(--text-muted); line-height:1.5;">
+              <strong>Architecture:</strong> Feature-Tokenizer Transformer (Linear Numerical Projections + 4-Head Self-Attention Blocks + LayerNorm + GELU FFN).
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Self-Attention Cross-Feature Matrix Heatmap -->
+        <div class="dash-col-8">
+          <div class="glass-card" style="height:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div>
+                <h3 style="font-size:16px; margin:0; color:#38bdf8;">
+                  🔥 Self-Attention Cross-Feature Interaction Matrix
+                </h3>
+                <p style="font-size:12px; color:var(--text-muted); margin:3px 0 0 0;">
+                  Quantifies cross-token attention weights $A_{ij} = \text{softmax}(Q_i K_j^T / \sqrt{d_k})$ between clinical biomarkers.
+                </p>
+              </div>
+              <button class="btn-secondary" style="font-size:11.5px;" onclick="runXAIAnalysis()">
+                🔄 Refresh Attention
+              </button>
+            </div>
+
+            <!-- Attention Table Heatmap Container -->
+            <div style="overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:center;" id="ftt-attention-table">
+                <!-- Dynamically populated attention matrix -->
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHAP Waterfall Feature Attribution Decomposition -->
+      <div class="glass-card" style="margin-bottom:20px; padding:18px;">
+        <h3 style="font-size:16px; margin-bottom:4px; color:#38bdf8;">
+          📊 Local SHAP Feature Attribution Decomposition
+        </h3>
+        <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">
+          Marginal additive contributions pushing the model toward (<span style="color:#ef4444; font-weight:600;">+ Risk Driver</span>) or away from (<span style="color:#10b981; font-weight:600;">- Protective / Normalizing</span>) the clinical diagnosis.
+        </p>
+
+        <div id="shap-waterfall-container" style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+          <!-- Dynamically populated waterfall bars -->
+        </div>
+      </div>
+
+      <!-- Interactive "What-If" Counterfactual Optimization -->
+      <div class="glass-card" style="margin-bottom:20px; padding:18px; border-left:4px solid #10b981;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+          <div>
+            <h3 style="font-size:16px; margin:0; color:#10b981;">
+              🧪 Interactive "What-If" Clinical Counterfactual Explorer
+            </h3>
+            <p style="font-size:12.5px; color:var(--text-secondary); margin:4px 0 0 0;">
+              Simulate hormone adjustments and discover the minimal perturbation required to transition to Euthyroid baseline.
+            </p>
+          </div>
+          <button class="btn-primary" style="font-size:12px; padding:6px 14px;" onclick="exportFHIRBundleModal()">
+            📥 Export Standardized HL7 FHIR R4 Bundle
+          </button>
+        </div>
+
+        <div class="dash-grid-12" style="gap:14px;">
+          <!-- Sliders -->
+          <div class="dash-col-6">
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:14px; border-radius:8px;">
+              <div style="margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                  <span>TSH Slider (mIU/L):</span>
+                  <strong style="color:#38bdf8;" id="cf-tsh-val-display">8.50 mIU/L</strong>
+                </div>
+                <input type="range" id="cf-tsh-slider" min="0.05" max="25.0" step="0.05" value="8.5" style="width:100%;" oninput="handleCounterfactualSliderChange()" />
+                <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-muted);">
+                  <span>0.05 (Suppressed)</span>
+                  <span style="color:#10b981;">0.4 - 4.5 (Target)</span>
+                  <span>25.0 (Elevated)</span>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                  <span>Free T4 / FTI Slider (pmol/L):</span>
+                  <strong style="color:#38bdf8;" id="cf-fti-val-display">105.0 pmol/L</strong>
+                </div>
+                <input type="range" id="cf-fti-slider" min="30.0" max="250.0" step="1.0" value="105.0" style="width:100%;" oninput="handleCounterfactualSliderChange()" />
+                <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-muted);">
+                  <span>30 (Low)</span>
+                  <span style="color:#10b981;">70 - 140 (Target)</span>
+                  <span>250 (High)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Counterfactual Target Card -->
+          <div class="dash-col-6">
+            <div style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); padding:14px; border-radius:8px; height:100%;">
+              <div style="font-size:12.5px; font-weight:700; color:#10b981; margin-bottom:6px;">
+                🎯 Counterfactual Normalization Target
+              </div>
+              <div style="font-size:12.5px; line-height:1.6; color:#f8fafc; margin-bottom:10px;" id="cf-summary-text">
+                Targeting TSH to ~1.85 mIU/L shifts patient profile to a 97.4% Euthyroid probability.
+              </div>
+
+              <div id="cf-perturbations-list" style="display:flex; flex-direction:column; gap:6px;">
+                <!-- Dynamically populated perturbations -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- HL7 FHIR R4 DOSSIER MODAL -->
+  <div class="modal-overlay" id="fhir-modal">
+    <div class="modal-box" style="max-width:750px;">
+      <button class="modal-close-btn" onclick="closeFHIRModal()">✕</button>
+      <h3 style="font-size:17px; margin-bottom:6px; color:#38bdf8;">📥 Standardized HL7 FHIR R4 Diagnostic Bundle</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+        Interoperable healthcare JSON bundle with Patient, Laboratory Observations, ImagingStudy, and DiagnosticReport resources.
+      </p>
+      
+      <div style="background:#020617; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; max-height:360px; overflow-y:auto; margin-bottom:14px;">
+        <pre id="fhir-json-display" style="font-size:11px; color:#38bdf8; margin:0; font-family:monospace; white-space:pre-wrap;"></pre>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn-secondary" onclick="copyFHIRJSON()">📋 Copy JSON</button>
+        <button class="btn-primary" onclick="downloadFHIRJSON()">💾 Download .json File</button>
+        <button class="btn-secondary" onclick="closeFHIRModal()">Close</button>
+      </div>
+    </div>
   </div>
 
   <!-- DOCTOR SOAP NOTE MODAL -->

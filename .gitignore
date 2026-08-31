@@ -25,3 +25,4 @@ Thumbs.db
 
 # Temporary database locks
 *.db-journal
+catboost_info/

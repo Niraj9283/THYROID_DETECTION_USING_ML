@@ -1,15 +1,35 @@
 {
+  "XGBoost": {
+    "accuracy": 0.9722,
+    "f1_score": 0.9431
+  },
+  "LightGBM": {
+    "accuracy": 0.9687,
+    "f1_score": 0.9339
+  },
+  "CatBoost": {
+    "accuracy": 0.9733,
+    "f1_score": 0.9444
+  },
   "Random Forest": {
-    "accuracy": 0.9638,
-    "f1_score": 0.9639
+    "accuracy": 0.9637,
+    "f1_score": 0.9297
   },
-  "Gradient Boosting": {
-    "accuracy": 0.97,
-    "f1_score": 0.9696
+  "Extra Trees": {
+    "accuracy": 0.8487,
+    "f1_score": 0.6709
   },
-  "SVM": {
-    "accuracy": 0.8708,
-    "f1_score": 0.8773
+  "SVM (RBF)": {
+    "accuracy": 0.8723,
+    "f1_score": 0.7128
   },
-  "best_model": "Gradient Boosting"
+  "Deep MLP": {
+    "accuracy": 0.9393,
+    "f1_score": 0.8247
+  },
+  "Stacking Super Learner": {
+    "accuracy": 0.9715,
+    "f1_score": 0.9453
+  },
+  "best_model": "Random Forest"
 }

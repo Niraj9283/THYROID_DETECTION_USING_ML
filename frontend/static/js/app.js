@@ -46,6 +46,14 @@ function switchTab(tabId) {
     loadAssessmentsList();
   } else if (tabId === 'trends') {
     loadTrends();
+  } else if (tabId === 'modellab') {
+    loadModelLabBenchmarks();
+  } else if (tabId === 'ultrasound') {
+    initUltrasoundStudio();
+  } else if (tabId === 'trajectory') {
+    initTrajectoryTracker();
+  } else if (tabId === 'explainability') {
+    initExplainabilityStudio();
   }
 }
 
@@ -1110,18 +1118,877 @@ async function loadDashboardStats() {
 }
 
 async function loadModelCardInfo() {
-  try {
-    const res = await fetch(`${API_BASE}/api/model-info`);
-    const data = await res.json();
-    console.log('Model Registry Loaded:', data);
-  } catch (err) {
-    console.warn('Model card loading error:', err);
-  }
+  loadModelLabBenchmarks();
 }
 
 // -------------------------------------------------------------
-// 14. Toast Notification
+// 14. Model Laboratory & Diagnostic Tournament Engine
 // -------------------------------------------------------------
+async function loadModelLabBenchmarks() {
+  const tbody = document.getElementById('lab-benchmarks-tbody');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/model-lab/benchmarks`);
+    const data = await res.json();
+
+    if (!data || !data.leaderboard || Object.keys(data.leaderboard).length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Model benchmarks are initializing. Click Run Tournament above.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    const champion = data.champion_model || '';
+
+    for (const [modelName, meta] of Object.entries(data.leaderboard)) {
+      const isChamp = (modelName === champion);
+      const tr = document.createElement('tr');
+      if (isChamp) tr.style.background = 'rgba(56, 189, 248, 0.08)';
+
+      const champBadge = isChamp ? ' <span class="status-pill normal" style="font-size:10.5px; padding:2px 6px;">Champion 🏆</span>' : '';
+
+      tr.innerHTML = `
+        <td><strong>${modelName}</strong>${champBadge}</td>
+        <td><span style="font-size:12px; color:var(--text-secondary);">${meta.model_type || 'Classifier'}</span></td>
+        <td><strong>${meta.accuracy ? meta.accuracy.toFixed(2) + '%' : 'N/A'}</strong></td>
+        <td>${meta.balanced_accuracy ? meta.balanced_accuracy.toFixed(2) + '%' : 'N/A'}</td>
+        <td>${meta.macro_f1 ? meta.macro_f1.toFixed(2) + '%' : 'N/A'}</td>
+        <td><span style="color:#38bdf8; font-weight:700;">${meta.roc_auc ? meta.roc_auc.toFixed(2) + '%' : 'N/A'}</span></td>
+        <td>${meta.ece !== undefined ? meta.ece.toFixed(4) : 'N/A'}</td>
+        <td>${meta.brier_score !== undefined ? meta.brier_score.toFixed(4) : 'N/A'}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    console.error('Error loading Model Lab benchmarks:', err);
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--risk-high);">Could not load model benchmarks.</td></tr>';
+  }
+}
+
+function loadLabPreset(preset) {
+  const presets = {
+    normal: { tsh: 2.1, t3: 2.3, tt4: 105.0, t4u: 1.01, fti: 104.0, age: 42, sex: 'F', thyroxine: 'f' },
+    sub_hypo: { tsh: 7.8, t3: 2.0, tt4: 98.0, t4u: 1.05, fti: 93.3, age: 54, sex: 'F', thyroxine: 'f' },
+    overt_hypo: { tsh: 28.5, t3: 0.8, tt4: 38.0, t4u: 1.25, fti: 30.4, age: 62, sex: 'F', thyroxine: 'f' },
+    sub_hyper: { tsh: 0.08, t3: 3.4, tt4: 135.0, t4u: 0.92, fti: 146.7, age: 38, sex: 'M', thyroxine: 'f' },
+    outlier: { tsh: 65.0, t3: 8.5, tt4: 260.0, t4u: 0.40, fti: 650.0, age: 88, sex: 'M', thyroxine: 't' }
+  };
+
+  const p = presets[preset];
+  if (!p) return;
+
+  document.getElementById('lab-input-tsh').value = p.tsh;
+  document.getElementById('lab-input-t3').value = p.t3;
+  document.getElementById('lab-input-tt4').value = p.tt4;
+  document.getElementById('lab-input-t4u').value = p.t4u;
+  document.getElementById('lab-input-fti').value = p.fti;
+  document.getElementById('lab-input-age').value = p.age;
+  document.getElementById('lab-input-sex').value = p.sex;
+  document.getElementById('lab-input-thyroxine').value = p.thyroxine;
+
+  showToast(`Loaded Preset: ${preset.replace('_', ' ').toUpperCase()}`);
+}
+
+async function runLaboratoryTournament() {
+  const btn = document.getElementById('btn-run-tournament');
+  const resultsWrap = document.getElementById('lab-tournament-results');
+
+  const inputPayload = {
+    TSH: parseFloat(document.getElementById('lab-input-tsh').value) || null,
+    T3: parseFloat(document.getElementById('lab-input-t3').value) || null,
+    TT4: parseFloat(document.getElementById('lab-input-tt4').value) || null,
+    T4U: parseFloat(document.getElementById('lab-input-t4u').value) || null,
+    FTI: parseFloat(document.getElementById('lab-input-fti').value) || null,
+    age: parseInt(document.getElementById('lab-input-age').value) || 45,
+    sex: document.getElementById('lab-input-sex').value || 'F',
+    on_thyroxine: document.getElementById('lab-input-thyroxine').value || 'f'
+  };
+
+  // Set default measurement flags
+  inputPayload.TSH_measured = inputPayload.TSH !== null ? 1 : 0;
+  inputPayload.T3_measured = inputPayload.T3 !== null ? 1 : 0;
+  inputPayload.TT4_measured = inputPayload.TT4 !== null ? 1 : 0;
+  inputPayload.T4U_measured = inputPayload.T4U !== null ? 1 : 0;
+  inputPayload.FTI_measured = inputPayload.FTI !== null ? 1 : 0;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Executing 8 Model Families in Parallel...';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/model-lab/predict-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inputPayload)
+    });
+
+    const data = await res.json();
+    if (data.error) {
+      showToast(`Error: ${data.error}`);
+      return;
+    }
+
+    resultsWrap.style.display = 'block';
+
+    // 1. Champion Consensus Card
+    const champDiag = document.getElementById('lab-champion-diagnosis');
+    const champConf = document.getElementById('lab-champion-conf');
+    const consensusScore = document.getElementById('lab-consensus-score');
+    const disagBox = document.getElementById('lab-disagreement-box');
+
+    champDiag.textContent = data.champion_prediction_badge || 'Negative';
+    champConf.textContent = `Calibrated Probability: ${data.champion_confidence}% (Consensus: ${data.consensus_pct}%)`;
+    consensusScore.textContent = `${data.consensus_score} Models Agree`;
+
+    if (data.has_split_opinion && data.split_opinion_warning) {
+      disagBox.style.display = 'block';
+      disagBox.textContent = data.split_opinion_warning;
+    } else {
+      disagBox.style.display = 'none';
+    }
+
+    // 2. Autoencoder Anomaly Card
+    const ae = data.anomaly_screening || {};
+    const aeCard = document.getElementById('lab-autoencoder-card');
+    const aeBadge = document.getElementById('lab-ae-badge');
+    const aeScoreTxt = document.getElementById('lab-ae-score-txt');
+    const aeStatusTitle = document.getElementById('lab-ae-status-title');
+    const aeGuidanceTxt = document.getElementById('lab-ae-guidance-txt');
+    const aeDeviations = document.getElementById('lab-ae-deviations');
+
+    if (ae.available) {
+      aeScoreTxt.textContent = `Recon MSE: ${ae.anomaly_score} (Cutoff: ${ae.anomaly_threshold})`;
+      aeStatusTitle.textContent = ae.clinical_status;
+      aeGuidanceTxt.textContent = ae.clinical_guidance;
+
+      if (ae.is_anomaly) {
+        aeCard.style.borderColor = '#ef4444';
+        aeBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+        aeBadge.style.color = '#ef4444';
+        aeBadge.textContent = '🚨 Physiological Anomaly Flagged';
+      } else {
+        aeCard.style.borderColor = '#10b981';
+        aeBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+        aeBadge.style.color = '#10b981';
+        aeBadge.textContent = '✔ Standard Physiological Distribution';
+      }
+
+      if (ae.top_deviating_biomarkers && ae.top_deviating_biomarkers.length > 0) {
+        let devHtml = '<div style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px;"><strong>Biomarker Reconstruction Attribution:</strong><br>';
+        ae.top_deviating_biomarkers.forEach(b => {
+          devHtml += `<span style="display:inline-block; margin-right:12px; margin-top:3px;">• <code>${b.biomarker}</code> = ${b.input_value} (Dev: ${b.reconstruction_error})</span>`;
+        });
+        devHtml += '</div>';
+        aeDeviations.innerHTML = devHtml;
+      } else {
+        aeDeviations.innerHTML = '';
+      }
+    }
+
+    // 3. 8-Model Battle Cards Grid
+    const cardsGrid = document.getElementById('lab-model-cards-grid');
+    cardsGrid.innerHTML = '';
+
+    const modelsObj = data.individual_models || {};
+    for (const [mName, mData] of Object.entries(modelsObj)) {
+      const card = document.createElement('div');
+      card.className = 'glass-card';
+      card.style.padding = '14px';
+      card.style.background = 'rgba(30, 41, 59, 0.7)';
+
+      const isAgree = (mData.prediction === data.champion_prediction);
+      const borderClr = isAgree ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)';
+      card.style.border = `1px solid ${borderClr}`;
+
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="font-size:14px; color:#ffffff;">${mName}</strong>
+          <span class="status-pill normal" style="font-size:10px; padding:2px 6px;">${mData.model_badge || 'Classifier'}</span>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:16px; font-weight:800; color:${isAgree ? '#38bdf8' : '#f59e0b'};">
+            ${mData.prediction_badge || 'N/A'}
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            Confidence: <strong>${mData.confidence}%</strong> (Hist. Acc: ${mData.historical_accuracy || 'N/A'})
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08); height:6px; border-radius:3px; overflow:hidden;">
+          <div style="width:${mData.confidence}%; height:100%; background:${isAgree ? '#38bdf8' : '#f59e0b'};"></div>
+        </div>
+      `;
+      cardsGrid.appendChild(card);
+    }
+
+    // Refresh benchmarks table
+    loadModelLabBenchmarks();
+    showToast('Model Tournament Completed!');
+    resultsWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    console.error('Tournament execution error:', err);
+    showToast('Failed to run tournament inference.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Run Model Tournament & Anomaly Screening';
+  }
+}
+
+
+
+// -------------------------------------------------------------
+// 14. Phase 2: Multimodal Ultrasound AI & ACR TI-RADS Studio
+// -------------------------------------------------------------
+let currentUltrasoundData = null;
+let currentUltrasoundRawB64 = null;
+let currentUltrasoundOverlayB64 = null;
+let showingOverlay = true;
+
+const ULTRASOUND_PRESETS = {
+  'tr1_benign_cyst': {
+    composition: 'cystic', echogenicity: 'anechoic', shape: 'wider_than_tall',
+    margin: 'smooth', foci: 'none', size: 1.6
+  },
+  'tr3_follicular_adenoma': {
+    composition: 'solid', echogenicity: 'isoechoic', shape: 'wider_than_tall',
+    margin: 'smooth', foci: 'none', size: 2.1
+  },
+  'tr4_suspicious_nodule': {
+    composition: 'solid', echogenicity: 'hypoechoic', shape: 'wider_than_tall',
+    margin: 'lobulated_irregular', foci: 'macrocalcifications', size: 1.7
+  },
+  'tr5_papillary_carcinoma': {
+    composition: 'solid', echogenicity: 'very_hypoechoic', shape: 'taller_than_wide',
+    margin: 'lobulated_irregular', foci: 'punctate_microcalcifications', size: 1.4
+  }
+};
+
+let ultrasoundStudioInitialized = false;
+function initUltrasoundStudio() {
+  if (ultrasoundStudioInitialized) return;
+  ultrasoundStudioInitialized = true;
+  loadUltrasoundPreset('tr5_papillary_carcinoma');
+}
+
+function loadUltrasoundPreset(key) {
+  const p = ULTRASOUND_PRESETS[key];
+  if (!p) return;
+
+  document.getElementById('tirads-composition').value = p.composition;
+  document.getElementById('tirads-echogenicity').value = p.echogenicity;
+  document.getElementById('tirads-shape').value = p.shape;
+  document.getElementById('tirads-margin').value = p.margin;
+  document.getElementById('tirads-foci').value = p.foci;
+  document.getElementById('tirads-size').value = p.size;
+
+  runUltrasoundAnalysis(key);
+}
+
+async function runUltrasoundAnalysis(presetKey = 'tr5_papillary_carcinoma') {
+  const comp = document.getElementById('tirads-composition').value;
+  const echo = document.getElementById('tirads-echogenicity').value;
+  const shape = document.getElementById('tirads-shape').value;
+  const margin = document.getElementById('tirads-margin').value;
+  const foci = document.getElementById('tirads-foci').value;
+  const size = parseFloat(document.getElementById('tirads-size').value) || 1.5;
+
+  const payload = {
+    composition: comp,
+    echogenicity: echo,
+    shape: shape,
+    margin: margin,
+    echogenic_foci: foci,
+    nodule_size_cm: size,
+    preset_key: presetKey
+  };
+
+  try {
+    const res = await fetch('/api/ultrasound/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showToast(`Ultrasound error: ${data.error}`);
+      return;
+    }
+
+    currentUltrasoundData = data;
+    currentUltrasoundRawB64 = data.raw_image_b64;
+    currentUltrasoundOverlayB64 = data.segmentation_overlay_b64;
+    showingOverlay = true;
+
+    // Display image
+    const imgEl = document.getElementById('us-display-img');
+    const placeholder = document.getElementById('us-placeholder-text');
+    imgEl.src = data.segmentation_overlay_b64;
+    imgEl.style.display = 'inline-block';
+    if (placeholder) placeholder.style.display = 'none';
+
+    // Update morphology metrics
+    const morph = data.morphology_metrics || {};
+    document.getElementById('us-major-axis').textContent = `${morph.major_axis_mm || '--'} mm`;
+    document.getElementById('us-minor-axis').textContent = `${morph.minor_axis_mm || '--'} mm`;
+    document.getElementById('us-aspect-ratio').textContent = morph.aspect_ratio || '--';
+    document.getElementById('us-shape-class').textContent = morph.shape_classification || '--';
+    document.getElementById('us-shape-class').style.color = (morph.aspect_ratio > 1.0) ? '#ef4444' : '#10b981';
+    document.getElementById('us-volume').textContent = `${morph.estimated_volume_ml || '--'} mL`;
+
+    // Update TI-RADS Diagnostic Output
+    const badge = document.getElementById('tirads-category-badge');
+    badge.textContent = `${data.category} — ${data.classification}`;
+    badge.className = `badge ${data.badge_class || 'badge-danger'}`;
+
+    document.getElementById('tirads-points-text').textContent = `Total Points: ${data.total_points}`;
+    document.getElementById('tirads-risk-pct').textContent = `Malignancy Risk: ~${data.malignancy_probability}% (${data.malignancy_risk_range})`;
+    document.getElementById('tirads-progress-bar').style.width = `${Math.min(100, data.malignancy_probability)}%`;
+    document.getElementById('tirads-fna-text').textContent = data.fna_recommendation;
+    document.getElementById('tirads-followup-text').textContent = data.follow_up_recommendation;
+
+    // Auto update multimodal fusion
+    runMultimodalFusion();
+
+  } catch (err) {
+    console.error('Ultrasound analysis error:', err);
+    showToast('Failed to execute ultrasound analysis.');
+  }
+}
+
+function toggleUltrasoundOverlay() {
+  if (!currentUltrasoundData) return;
+  const imgEl = document.getElementById('us-display-img');
+  showingOverlay = !showingOverlay;
+  imgEl.src = showingOverlay ? currentUltrasoundOverlayB64 : currentUltrasoundRawB64;
+  showToast(showingOverlay ? 'Displaying U-Net Segmentation Overlay' : 'Displaying Raw B-Mode Ultrasound');
+}
+
+async function runMultimodalFusion() {
+  if (!currentUltrasoundData) {
+    showToast('Please run ultrasound analysis first.');
+    return;
+  }
+
+  // Get current tabular prediction status if available
+  const tabData = {
+    champion_prediction_badge: 'Negative (Normal Euthyroid)',
+    champion_confidence: 80.1,
+    anomaly_screening: { is_anomaly: false }
+  };
+
+  try {
+    const res = await fetch('/api/multimodal/fuse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tabular_data: tabData,
+        ultrasound_data: currentUltrasoundData
+      })
+    });
+    const data = await res.json();
+
+    if (data.error) return;
+
+    document.getElementById('mm-functional-status').textContent = data.functional_component.diagnosis;
+    document.getElementById('mm-functional-conf').textContent = `Confidence: ${data.functional_component.confidence}% | Autoencoder: ${data.functional_component.autoencoder_anomaly ? 'Outlier' : 'Normal'}`;
+
+    document.getElementById('mm-anatomical-status').textContent = `${data.anatomical_component.tirads_category} — ${data.anatomical_component.classification}`;
+    document.getElementById('mm-anatomical-risk').textContent = `Malignancy: ~${data.anatomical_component.malignancy_probability}% | Size: ${data.anatomical_component.nodule_size_cm} cm`;
+
+    document.getElementById('mm-composite-urgency').textContent = data.composite_urgency;
+    document.getElementById('mm-composite-summary').textContent = data.overall_status;
+
+    document.getElementById('mm-management-plan').textContent = data.multidisciplinary_management_plan;
+
+  } catch (err) {
+    console.error('Multimodal fusion error:', err);
+  }
+}
+
+
+// -------------------------------------------------------------
+// 15. Phase 2: Clinical Symptoms NLP Module
+// -------------------------------------------------------------
+const NLP_PRESETS = {
+  'hypo': 'Patient is a 52-year-old female presenting with profound chronic fatigue, cold intolerance, 4.5kg unexplained weight gain over 4 months, constipation, brain fog, facial puffiness, and brittle hair thinning.',
+  'hyper': 'Patient reports 3-week history of resting palpitations, racing heart rate (tachycardia 112 bpm), severe heat intolerance, diaphoresis, hand tremor, anxiety with insomnia, and 5kg unintentional weight loss despite hyperphagia.',
+  'goiter': 'Patient complains of visible anterior neck swelling, progressive difficulty swallowing (dysphagia with solid foods), persistent hoarseness in voice, and globus sensation of throat tightness when lying supine.'
+};
+
+function loadNLPPreset(type) {
+  const text = NLP_PRESETS[type] || '';
+  document.getElementById('nlp-clinical-text').value = text;
+  runClinicalNLPExtraction();
+}
+
+async function runClinicalNLPExtraction() {
+  const text = document.getElementById('nlp-clinical-text').value;
+  if (!text || text.trim().length < 5) {
+    showToast('Please enter clinical notes to parse symptoms.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/clinical-nlp/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clinical_text: text })
+    });
+    const data = await res.json();
+
+    if (data.error || data.status === 'empty_text') {
+      showToast(data.message || 'No symptoms detected.');
+      return;
+    }
+
+    const container = document.getElementById('nlp-output-container');
+    container.style.display = 'block';
+
+    const badge = document.getElementById('nlp-phenotype-badge');
+    badge.textContent = data.dominant_phenotype;
+    badge.className = `badge ${data.phenotype_badge || 'badge-info'}`;
+
+    document.getElementById('nlp-matched-count').textContent = `${data.matched_symptoms_count} Symptoms Extracted`;
+    document.getElementById('nlp-hypo-burden').textContent = `${data.burden_scores.hypothyroid_pct}%`;
+    document.getElementById('nlp-hyper-burden').textContent = `${data.burden_scores.hyperthyroid_pct}%`;
+    document.getElementById('nlp-comp-burden').textContent = `${data.burden_scores.compressive_nodule_pct}%`;
+
+    const tagsContainer = document.getElementById('nlp-symptoms-tags');
+    tagsContainer.innerHTML = (data.symptoms_list || []).map(s => {
+      const color = s.category === 'hypothyroid' ? '#38bdf8' : (s.category === 'hyperthyroid' ? '#f59e0b' : '#ef4444');
+      return `<span style="background:rgba(255,255,255,0.06); border:1px solid ${color}; color:#f8fafc; font-size:11px; padding:3px 8px; border-radius:12px;">
+        ${s.display_name} (<em style="color:${color};">${s.matched_term}</em>)
+      </span>`;
+    }).join('');
+
+    document.getElementById('nlp-clinical-summary').textContent = data.clinical_interpretation;
+    showToast(`Extracted ${data.matched_symptoms_count} structured symptoms.`);
+
+  } catch (err) {
+    console.error('NLP extraction error:', err);
+    showToast('Failed to parse clinical notes.');
+  }
+}
+
+
+// -------------------------------------------------------------
+// 16. Phase 2: Longitudinal Trajectory Tracking Module
+// -------------------------------------------------------------
+let trajectoryVisits = [
+  { date: '2025-01-10', tsh: 8.4, ft4: 11.2, t3: 2.0, medication: 'None', dose_mcg: 0 },
+  { date: '2025-04-15', tsh: 6.1, ft4: 13.5, t3: 2.3, medication: 'Levothyroxine', dose_mcg: 50 },
+  { date: '2025-08-20', tsh: 3.2, ft4: 15.8, t3: 2.5, medication: 'Levothyroxine', dose_mcg: 75 }
+];
+
+const TRAJECTORY_PRESETS = {
+  'hypo_progression': [
+    { date: '2024-09-01', tsh: 4.8, ft4: 14.5, t3: 2.4, medication: 'None', dose_mcg: 0 },
+    { date: '2025-01-15', tsh: 7.2, ft4: 12.8, t3: 2.2, medication: 'None', dose_mcg: 0 },
+    { date: '2025-06-20', tsh: 11.5, ft4: 9.8, t3: 1.8, medication: 'None', dose_mcg: 0 }
+  ],
+  'euthyroid_control': [
+    { date: '2024-10-01', tsh: 9.2, ft4: 10.5, t3: 2.0, medication: 'None', dose_mcg: 0 },
+    { date: '2025-02-15', tsh: 4.5, ft4: 13.8, t3: 2.3, medication: 'Levothyroxine', dose_mcg: 50 },
+    { date: '2025-07-10', tsh: 1.8, ft4: 16.2, t3: 2.6, medication: 'Levothyroxine', dose_mcg: 75 }
+  ],
+  'over_replacement': [
+    { date: '2025-01-05', tsh: 5.8, ft4: 12.0, t3: 2.1, medication: 'Levothyroxine', dose_mcg: 50 },
+    { date: '2025-04-10', tsh: 1.2, ft4: 16.5, t3: 2.6, medication: 'Levothyroxine', dose_mcg: 100 },
+    { date: '2025-08-15', tsh: 0.08, ft4: 24.1, t3: 3.4, medication: 'Levothyroxine', dose_mcg: 150 }
+  ]
+};
+
+let trajectoryTrackerInitialized = false;
+function initTrajectoryTracker() {
+  if (trajectoryTrackerInitialized) return;
+  trajectoryTrackerInitialized = true;
+  renderTrajectoryTable();
+  runTrajectoryAnalysis();
+}
+
+function loadTrajectoryPreset(key) {
+  const p = TRAJECTORY_PRESETS[key];
+  if (!p) return;
+  trajectoryVisits = JSON.parse(JSON.stringify(p));
+  renderTrajectoryTable();
+  runTrajectoryAnalysis();
+}
+
+function renderTrajectoryTable() {
+  const tbody = document.getElementById('trajectory-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = trajectoryVisits.map((v, i) => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:6px;"><input type="date" value="${v.date}" onchange="updateTrajectoryVisit(${i}, 'date', this.value)" style="font-size:12px; padding:4px 8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#f8fafc;" /></td>
+      <td style="padding:6px;"><input type="number" step="0.01" value="${v.tsh}" onchange="updateTrajectoryVisit(${i}, 'tsh', this.value)" style="width:75px; font-size:12px; padding:4px 8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#f8fafc;" /></td>
+      <td style="padding:6px;"><input type="number" step="0.1" value="${v.ft4}" onchange="updateTrajectoryVisit(${i}, 'ft4', this.value)" style="width:75px; font-size:12px; padding:4px 8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#f8fafc;" /></td>
+      <td style="padding:6px;"><input type="number" step="0.1" value="${v.t3}" onchange="updateTrajectoryVisit(${i}, 't3', this.value)" style="width:75px; font-size:12px; padding:4px 8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#f8fafc;" /></td>
+      <td style="padding:6px;">
+        <select onchange="updateTrajectoryVisit(${i}, 'medication', this.value)" style="font-size:12px; padding:4px 8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#f8fafc;">
+          <option value="None" ${v.medication === 'None' ? 'selected' : ''}>None</option>
+          <option value="Levothyroxine" ${v.medication === 'Levothyroxine' ? 'selected' : ''}>Levothyroxine (T4)</option>
+          <option value="Liothyronine" ${v.medication === 'Liothyronine' ? 'selected' : ''}>Liothyronine (T3)</option>
+          <option value="Methimazole" ${v.medication === 'Methimazole' ? 'selected' : ''}>Methimazole</option>
+          <option value="PTU" ${v.medication === 'PTU' ? 'selected' : ''}>Propylthiouracil</option>
+        </select>
+      </td>
+      <td style="padding:6px;"><input type="number" step="12.5" value="${v.dose_mcg}" onchange="updateTrajectoryVisit(${i}, 'dose_mcg', this.value)" style="width:70px; font-size:12px; padding:4px 8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#f8fafc;" /></td>
+      <td style="padding:6px; text-align:center;">
+        <button class="btn-secondary" style="font-size:11px; padding:3px 8px; color:#ef4444;" onclick="deleteTrajectoryRow(${i})">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateTrajectoryVisit(index, field, val) {
+  if (!trajectoryVisits[index]) return;
+  if (field === 'tsh' || field === 'ft4' || field === 't3' || field === 'dose_mcg') {
+    trajectoryVisits[index][field] = parseFloat(val) || 0;
+  } else {
+    trajectoryVisits[index][field] = val;
+  }
+}
+
+function addTrajectoryRow() {
+  const lastDate = trajectoryVisits.length > 0 ? trajectoryVisits[trajectoryVisits.length - 1].date : '2025-01-01';
+  const d = new Date(lastDate);
+  d.setMonth(d.getMonth() + 3);
+  const nextDateStr = d.toISOString().split('T')[0];
+
+  trajectoryVisits.push({
+    date: nextDateStr,
+    tsh: 4.0,
+    ft4: 14.0,
+    t3: 2.2,
+    medication: 'Levothyroxine',
+    dose_mcg: 50
+  });
+  renderTrajectoryTable();
+}
+
+function deleteTrajectoryRow(idx) {
+  if (trajectoryVisits.length <= 2) {
+    showToast('At least 2 visits are required for trajectory velocity calculation.');
+    return;
+  }
+  trajectoryVisits.splice(idx, 1);
+  renderTrajectoryTable();
+}
+
+async function runTrajectoryAnalysis() {
+  if (trajectoryVisits.length < 2) {
+    showToast('Please record at least 2 longitudinal lab visits.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/trajectory/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visits: trajectoryVisits })
+    });
+    const data = await res.json();
+
+    if (data.error || data.status === 'insufficient_data') {
+      showToast(data.message || 'Trajectory analysis failed.');
+      return;
+    }
+
+    const resCard = document.getElementById('trajectory-results-card');
+    resCard.style.display = 'block';
+
+    const badge = document.getElementById('traj-pattern-badge');
+    badge.textContent = data.trajectory_pattern;
+    badge.className = `badge ${data.severity_badge || 'badge-info'}`;
+
+    document.getElementById('traj-response-text').textContent = data.treatment_response;
+    document.getElementById('traj-titration-text').textContent = data.titration_recommendation;
+
+    const m = data.metrics || {};
+    document.getElementById('traj-tsh-velocity').textContent = `${m.tsh_velocity_monthly > 0 ? '+' : ''}${m.tsh_velocity_monthly} /mo`;
+    document.getElementById('traj-ft4-velocity').textContent = `${m.ft4_velocity_monthly > 0 ? '+' : ''}${m.ft4_velocity_monthly} /mo`;
+    document.getElementById('traj-volatility').textContent = `${m.volatility_cv_pct}%`;
+    document.getElementById('traj-projected-tsh').textContent = `${m.projected_tsh_6m} mIU/L`;
+
+    // Render Timeline Flow
+    const flowContainer = document.getElementById('traj-timeline-flow');
+    flowContainer.innerHTML = (data.timeline || []).map((t, idx) => {
+      const isProj = t.is_projected;
+      const borderCol = isProj ? '#ef4444' : '#38bdf8';
+      return `
+        <div style="background:rgba(255,255,255,0.02); border-left:3px solid ${borderCol}; padding:8px 12px; border-radius:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:12.5px; color:${isProj ? '#ef4444' : '#f8fafc'};">${t.date} ${isProj ? '(Prognostic Forecast)' : ''}</strong>
+            <span style="font-size:11.5px; color:var(--text-muted);">${t.medication !== 'None' ? t.medication + ' ' + t.dose_mcg + 'mcg' : 'Unmedicated'}</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+            TSH: <strong>${t.tsh} mIU/L</strong> | Free T4: <strong>${t.ft4} pmol/L</strong>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    showToast('Trajectory Analysis Complete!');
+
+  } catch (err) {
+    console.error('Trajectory analysis error:', err);
+    showToast('Failed to compute trajectory.');
+  }
+}
+
+
+// -------------------------------------------------------------
+// 17. Phase 3 & 4: FT-Transformer & Explainability Studio (XAI)
+// -------------------------------------------------------------
+let currentXAIPatient = {
+  TSH: 8.5, FTI: 105.0, TT4: 100.0, T3: 2.2, T4U: 1.0, age: 45, on_thyroxine: 'f', sex: 'F'
+};
+
+const XAI_PRESETS = {
+  'subclinical_hypo': { TSH: 8.5, FTI: 105.0, TT4: 100.0, T3: 2.2, T4U: 1.0, age: 45, on_thyroxine: 'f', sex: 'F' },
+  'overt_hypo': { TSH: 28.0, FTI: 48.0, TT4: 42.0, T3: 1.1, T4U: 1.1, age: 52, on_thyroxine: 'f', sex: 'F' },
+  'hyperthyroid': { TSH: 0.04, FTI: 185.0, TT4: 195.0, T3: 4.2, T4U: 0.85, age: 36, on_thyroxine: 'f', sex: 'F' },
+  'euthyroid': { TSH: 1.85, FTI: 108.0, TT4: 105.0, T3: 2.3, T4U: 1.0, age: 32, on_thyroxine: 'f', sex: 'F' }
+};
+
+let explainabilityStudioInitialized = false;
+function initExplainabilityStudio() {
+  if (explainabilityStudioInitialized) return;
+  explainabilityStudioInitialized = true;
+  loadXAIPreset('subclinical_hypo');
+}
+
+function loadXAIPreset(key) {
+  const p = XAI_PRESETS[key];
+  if (!p) return;
+  currentXAIPatient = JSON.parse(JSON.stringify(p));
+
+  const sliderTsh = document.getElementById('cf-tsh-slider');
+  const sliderFti = document.getElementById('cf-fti-slider');
+  if (sliderTsh) sliderTsh.value = currentXAIPatient.TSH;
+  if (sliderFti) sliderFti.value = currentXAIPatient.FTI;
+
+  document.getElementById('cf-tsh-val-display').textContent = `${currentXAIPatient.TSH} mIU/L`;
+  document.getElementById('cf-fti-val-display').textContent = `${currentXAIPatient.FTI} pmol/L`;
+
+  runXAIAnalysis();
+}
+
+async function runXAIAnalysis() {
+  try {
+    // 1. Run FT-Transformer Inference
+    const fttRes = await fetch('/api/explainability/ft-transformer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentXAIPatient)
+    });
+    const fttData = await fttRes.json();
+
+    if (fttData.prediction_badge) {
+      document.getElementById('ftt-pred-badge').textContent = fttData.prediction_badge;
+      document.getElementById('ftt-confidence-text').innerHTML = `Model Confidence: <strong>${fttData.confidence}%</strong>`;
+
+      // Probability bars
+      const probBars = document.getElementById('ftt-prob-bars');
+      probBars.innerHTML = Object.entries(fttData.class_probabilities || {}).map(([cls, pct]) => `
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
+            <span>${cls.replace('_', ' ').title ? cls.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : cls}</span>
+            <strong>${pct}%</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.06); height:6px; border-radius:4px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:${cls.includes('subclinical') ? '#f59e0b' : (cls.includes('hypo') || cls.includes('hyper') ? '#ef4444' : '#10b981')};"></div>
+          </div>
+        </div>
+      `).join('');
+
+      // Render Attention Heatmap Table
+      renderAttentionMatrix(fttData.features, fttData.attention_matrix);
+    }
+
+    // 2. Fetch SHAP Feature Attributions
+    const shapRes = await fetch('/api/explainability/attributions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentXAIPatient)
+    });
+    const shapData = await shapRes.json();
+    if (shapData.attributions) {
+      renderSHAPWaterfall(shapData.attributions, shapData.base_value);
+    }
+
+    // 3. Fetch Counterfactual Optimization
+    const cfRes = await fetch('/api/explainability/counterfactual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentXAIPatient)
+    });
+    const cfData = await cfRes.json();
+    renderCounterfactualTarget(cfData);
+
+  } catch (err) {
+    console.error('XAI execution error:', err);
+    showToast('Failed to execute XAI suite.');
+  }
+}
+
+function renderAttentionMatrix(features, matrix) {
+  const table = document.getElementById('ftt-attention-table');
+  if (!table || !features || !matrix) return;
+
+  let html = `<thead><tr style="color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,0.1);"><th style="padding:6px; text-align:left;">Token (From \\ To)</th>`;
+  features.forEach(f => {
+    html += `<th style="padding:6px;">${f}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  matrix.forEach(row => {
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);"><td style="padding:6px; font-weight:600; text-align:left; color:#f8fafc;">${row.feature}</td>`;
+    features.forEach(fTo => {
+      const val = row.attentions[fTo] || 0;
+      const alpha = Math.min(0.9, Math.max(0.08, val * 2.2));
+      html += `<td style="padding:6px; background:rgba(56, 189, 248, ${alpha}); color:${alpha > 0.4 ? '#020617' : '#f8fafc'}; font-weight:${val > 0.15 ? '700' : '400'}; border-radius:4px;">
+        ${val.toFixed(2)}
+      </td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody>`;
+  table.innerHTML = html;
+}
+
+function renderSHAPWaterfall(attributions, baseVal) {
+  const container = document.getElementById('shap-waterfall-container');
+  if (!container) return;
+
+  container.innerHTML = attributions.map(attr => {
+    const isPos = attr.attribution_shap > 0;
+    const barWidth = Math.min(100, Math.abs(attr.attribution_shap) * 120);
+    const color = isPos ? '#ef4444' : '#10b981';
+
+    return `
+      <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:10px 14px; border-radius:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div>
+            <strong style="font-size:13px; color:#f8fafc;">${attr.feature}</strong>
+            <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">= ${attr.value}</span>
+          </div>
+          <div style="font-size:13px; font-weight:700; color:${color};">
+            ${isPos ? '+' : ''}${attr.attribution_shap} SHAP
+          </div>
+        </div>
+
+        <!-- Waterfall Bar -->
+        <div style="background:rgba(255,255,255,0.06); height:6px; border-radius:4px; overflow:hidden; margin-bottom:6px;">
+          <div style="width:${barWidth}%; height:100%; background:${color}; border-radius:4px;"></div>
+        </div>
+
+        <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">
+          ${attr.impact_description}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderCounterfactualTarget(cfData) {
+  const summaryEl = document.getElementById('cf-summary-text');
+  const listEl = document.getElementById('cf-perturbations-list');
+  if (!summaryEl || !listEl) return;
+
+  if (!cfData.is_counterfactual_needed) {
+    summaryEl.textContent = 'Patient is already in physiological homeostasis (Euthyroid baseline).';
+    listEl.innerHTML = '';
+    return;
+  }
+
+  summaryEl.textContent = cfData.summary;
+  listEl.innerHTML = (cfData.perturbations || []).map(p => `
+    <div style="background:rgba(255,255,255,0.02); border-left:3px solid #10b981; padding:6px 10px; border-radius:4px;">
+      <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+        <strong>${p.biomarker}:</strong>
+        <span style="color:#10b981;">Shift to ${p.target_value} (Δ ${p.required_change})</span>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+        ${p.clinical_action}
+      </div>
+    </div>
+  `).join('');
+}
+
+let cfSliderDebounce = null;
+function handleCounterfactualSliderChange() {
+  const tsh = parseFloat(document.getElementById('cf-tsh-slider').value) || 2.0;
+  const fti = parseFloat(document.getElementById('cf-fti-slider').value) || 105.0;
+
+  document.getElementById('cf-tsh-val-display').textContent = `${tsh.toFixed(2)} mIU/L`;
+  document.getElementById('cf-fti-val-display').textContent = `${fti.toFixed(1)} pmol/L`;
+
+  currentXAIPatient.TSH = tsh;
+  currentXAIPatient.FTI = fti;
+
+  clearTimeout(cfSliderDebounce);
+  cfSliderDebounce = setTimeout(() => {
+    runXAIAnalysis();
+  }, 250);
+}
+
+// -------------------------------------------------------------
+// 18. HL7 FHIR R4 Bundle Modal & Export
+// -------------------------------------------------------------
+let latestFHIRBundle = null;
+
+async function exportFHIRBundleModal() {
+  try {
+    const payload = {
+      patient_data: currentXAIPatient,
+      model_results: { champion_prediction_badge: document.getElementById('ftt-pred-badge') ? document.getElementById('ftt-pred-badge').textContent : 'Negative' },
+      ultrasound_data: currentUltrasoundData || { category: 'TR1', classification: 'Benign', malignancy_probability: 1.2 }
+    };
+
+    const res = await fetch('/api/fhir/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    latestFHIRBundle = data;
+    document.getElementById('fhir-json-display').textContent = JSON.stringify(data, null, 2);
+    document.getElementById('fhir-modal').classList.add('active');
+
+  } catch (err) {
+    console.error('FHIR export error:', err);
+    showToast('Failed to generate FHIR R4 bundle.');
+  }
+}
+
+function closeFHIRModal() {
+  document.getElementById('fhir-modal').classList.remove('active');
+}
+
+function copyFHIRJSON() {
+  if (!latestFHIRBundle) return;
+  navigator.clipboard.writeText(JSON.stringify(latestFHIRBundle, null, 2));
+  showToast('HL7 FHIR R4 JSON copied to clipboard!');
+}
+
+function downloadFHIRJSON() {
+  if (!latestFHIRBundle) return;
+  const str = JSON.stringify(latestFHIRBundle, null, 2);
+  const blob = new Blob([str], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ThyroScan_FHIR_Bundle_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('FHIR Bundle JSON downloaded!');
+}
+
+
 function showToast(msg) {
   const existing = document.querySelector('.app-toast');
   if (existing) existing.remove();
