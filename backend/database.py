@@ -10,8 +10,12 @@ import json
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'thyroscan.db')
+if os.environ.get('VERCEL'):
+    DB_PATH = '/tmp/thyroscan.db'
+else:
+    DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'thyroscan.db')
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
 
 
 def get_db():

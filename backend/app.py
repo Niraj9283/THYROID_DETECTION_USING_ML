@@ -37,7 +37,10 @@ from backend.fhir_report_service import generate_fhir_r4_bundle
 
 
 
-app = Flask(__name__, static_folder='../frontend', static_url_path='')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload limit
 
 init_db()
@@ -60,17 +63,18 @@ def after_request_handler(response):
 # -------------------------------------------------------------
 @app.route('/')
 def index():
-    return send_from_directory('../frontend', 'index.html')
+    return send_from_directory(FRONTEND_DIR, 'index.html')
 
 
 @app.route('/manifest.json')
 def manifest():
-    return send_from_directory('../frontend', 'manifest.json')
+    return send_from_directory(FRONTEND_DIR, 'manifest.json')
 
 
 @app.route('/sw.js')
 def service_worker():
-    return send_from_directory('../frontend', 'sw.js')
+    return send_from_directory(FRONTEND_DIR, 'sw.js')
+
 
 
 # -------------------------------------------------------------
