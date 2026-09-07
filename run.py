@@ -28,13 +28,14 @@ def train_if_needed():
 
 
 def start_server():
+    port = int(os.environ.get('PORT', 5000))
     print("\n" + "=" * 50)
     print("Starting ThyroScan Server")
-    print("   URL: http://localhost:5000")
+    print(f"   URL: http://0.0.0.0:{port}")
     print("   Press Ctrl+C to stop")
     print("=" * 50 + "\n")
     from backend.app import app
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=port)
 
 
 if __name__ == '__main__':

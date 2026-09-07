@@ -26,3 +26,5 @@ Thumbs.db
 # Temporary database locks
 *.db-journal
 catboost_info/
+.vercel
+.env*
